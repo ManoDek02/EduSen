@@ -3,12 +3,19 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 import Eleves from "./pages/administration/Eleves";
 import Professeurs from "./pages/administration/Professeurs";
 import EmploiDuTemps from "./pages/administration/EmploiDuTemps";
+
+// Routes pour les élèves
+import Syllabus from "./pages/eleves/Syllabus";
+
+// Routes pour les professeurs
+// Ces composants seront créés à la demande
 
 const queryClient = new QueryClient();
 
@@ -19,14 +26,32 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          {/* Page d'accueil et de connexion */}
+          <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           
           {/* Routes Administration */}
           <Route path="/administration/eleves" element={<Eleves />} />
           <Route path="/administration/professeurs" element={<Professeurs />} />
           <Route path="/administration/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/administration/notes" element={<Eleves />} />
+          <Route path="/administration/bulletins" element={<Eleves />} />
           
-          {/* Ajouter d'autres routes ici */}
+          {/* Routes Professeurs */}
+          <Route path="/professeurs/classes" element={<Professeurs />} />
+          <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/professeurs/notes" element={<Eleves />} />
+          
+          {/* Routes Élèves */}
+          <Route path="/eleves/syllabus" element={<Syllabus />} />
+          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/eleves/notes" element={<Eleves />} />
+          <Route path="/eleves/bulletin" element={<Eleves />} />
+          <Route path="/eleves/contact-professeurs" element={<Professeurs />} />
+          <Route path="/eleves/baki" element={<Eleves />} />
+          
+          {/* Routes Parents */}
+          <Route path="/parents" element={<Dashboard />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
