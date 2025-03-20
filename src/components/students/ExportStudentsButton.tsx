@@ -5,7 +5,12 @@ import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-const ExportStudentsButton = ({ data }) => {
+// Define a type for the student data
+interface StudentData {
+  [key: string]: string | number | boolean | undefined;
+}
+
+const ExportStudentsButton = ({ data }: { data: StudentData[] }) => {
   const { toast } = useToast();
 
   const exportToCSV = () => {

@@ -11,15 +11,19 @@ const csvExample = `nom,prenom,dateNaissance,classe,responsable,email,telephone,
 Dupont,Marie,2006-05-15,3ème A,Jean Dupont,jean.dupont@example.com,0612345678,"15 rue des écoles, 75005 Paris",Actif
 Martin,Lucas,2008-10-22,5ème B,Sophie Martin,sophie.martin@example.com,0687654321,"8 avenue Victor Hugo, 75016 Paris",Actif`;
 
-const ImportStudentsDialog = ({ onImportStudents }) => {
+interface ImportedStudent {
+  [key: string]: string;
+}
+
+const ImportStudentsDialog = ({ onImportStudents }: { onImportStudents: (students: ImportedStudent[]) => void }) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [importPreview, setImportPreview] = useState([]);
+  const [importPreview, setImportPreview] = useState<ImportedStudent[]>([]);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
@@ -28,7 +32,7 @@ const ImportStudentsDialog = ({ onImportStudents }) => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
@@ -38,14 +42,14 @@ const ImportStudentsDialog = ({ onImportStudents }) => {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
       handleFile(selectedFile);
     }
   };
 
-  const handleFile = (file) => {
+  const handleFile = (file: File) => {
     // Vérifier l'extension du fichier
     if (!file.name.endsWith('.csv')) {
       toast({
@@ -61,7 +65,11 @@ const ImportStudentsDialog = ({ onImportStudents }) => {
     
     reader.onload = (e) => {
       try {
-        const content = e.target.result;
+        const content = e.target?.result;
+        if (typeof content !== 'string') {
+          throw new Error('Content is not a string');
+        }
+        
         const rows = content.split('\n');
         const headers = rows[0].split(',');
         
@@ -79,13 +87,13 @@ const ImportStudentsDialog = ({ onImportStudents }) => {
         }
         
         // Créer un aperçu des données (5 premières lignes)
-        const preview = [];
+        const preview: ImportedStudent[] = [];
         const dataRows = rows.slice(1, 6); // 5 premières lignes de données
         
         for (const row of dataRows) {
           if (row.trim()) {
             const values = row.split(',');
-            const obj = {};
+            const obj: ImportedStudent = {};
             
             headers.forEach((header, i) => {
               obj[header.trim()] = values[i]?.trim() || '';
@@ -112,7 +120,7 @@ const ImportStudentsDialog = ({ onImportStudents }) => {
   const handleImport = () => {
     // Simuler l'import (dans une vraie application, on enverrait le fichier au serveur)
     // Ici, on suppose que l'import est réussi et on simule l'ajout de quelques élèves
-    const newStudents = importPreview.map((student, index) => ({
+    const newStudents = importPreview.map((student) => ({
       ...student,
       id: `imp-${Math.floor(Math.random() * 10000)}`,
     }));
