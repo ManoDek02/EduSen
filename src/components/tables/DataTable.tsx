@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Search, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Column = {
@@ -22,6 +22,9 @@ type DataTableProps = {
   className?: string;
   loading?: boolean;
   onRowClick?: (row: any) => void;
+  additionalFilters?: React.ReactNode;
+  searchTerm?: string;
+  onSearch?: (term: string) => void;
 };
 
 const DataTable = ({
@@ -32,22 +35,45 @@ const DataTable = ({
   itemsPerPage = 10,
   className,
   loading = false,
-  onRowClick
+  onRowClick,
+  additionalFilters,
+  searchTerm: externalSearchTerm,
+  onSearch: externalOnSearch
 }: DataTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [internalSearchTerm, setInternalSearchTerm] = useState('');
   const isMobile = useIsMobile();
 
-  // Filter data based on search term
-  const filteredData = searchTerm
-    ? data.filter(item =>
-        Object.values(item).some(
-          value =>
-            value &&
-            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      )
-    : data;
+  // Gestion de l'état de recherche - interne ou externe
+  const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
+  
+  useEffect(() => {
+    if (externalSearchTerm !== undefined) {
+      setInternalSearchTerm(externalSearchTerm);
+    }
+  }, [externalSearchTerm]);
+
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setInternalSearchTerm(term);
+    
+    if (externalOnSearch) {
+      externalOnSearch(term);
+    }
+  };
+
+  // Filter data based on search term if no external search handler
+  const filteredData = externalOnSearch 
+    ? data 
+    : (searchTerm
+        ? data.filter(item =>
+            Object.values(item).some(
+              value =>
+                value &&
+                value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          )
+        : data);
 
   // Paginate data
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -57,6 +83,11 @@ const DataTable = ({
         currentPage * itemsPerPage
       )
     : filteredData;
+
+  // Reset to first page when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -81,13 +112,10 @@ const DataTable = ({
               placeholder="Rechercher..."
               className="pl-8 w-full sm:w-[300px]"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
-          <Button variant="outline" size="sm" className="w-full sm:w-auto">
-            <Filter className="mr-2 h-4 w-4" />
-            Filtres
-          </Button>
+          {additionalFilters}
         </div>
       )}
 

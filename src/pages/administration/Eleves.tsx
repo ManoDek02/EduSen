@@ -3,13 +3,17 @@ import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Download, Upload, Eye } from 'lucide-react';
+import { Search } from 'lucide-react';
 import DataTable from '@/components/tables/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import NewStudentDialog from '@/components/students/NewStudentDialog';
+import ImportStudentsDialog from '@/components/students/ImportStudentsDialog';
+import ExportStudentsButton from '@/components/students/ExportStudentsButton';
+import FilterStudentsDialog from '@/components/students/FilterStudentsDialog';
 
 // Exemple de données pour les élèves
 const elevesMockData = [
@@ -219,6 +223,76 @@ const EleveDetailDialog = ({ eleve }) => {
 
 const Eleves = () => {
   const [selectedEleve, setSelectedEleve] = useState(null);
+  const [eleves, setEleves] = useState(elevesMockData);
+  const [filteredEleves, setFilteredEleves] = useState(elevesMockData);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilters, setActiveFilters] = useState({});
+
+  const handleAddStudent = (newStudent) => {
+    setEleves([...eleves, newStudent]);
+    setFilteredEleves([...eleves, newStudent]);
+  };
+
+  const handleImportStudents = (importedStudents) => {
+    const updatedEleves = [...eleves, ...importedStudents];
+    setEleves(updatedEleves);
+    applyFiltersAndSearch(updatedEleves, searchTerm, activeFilters);
+  };
+
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
+    applyFiltersAndSearch(eleves, searchTerm, filters);
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    applyFiltersAndSearch(eleves, term, activeFilters);
+  };
+
+  const applyFiltersAndSearch = (data, term, filters) => {
+    let result = [...data];
+
+    // Appliquer les filtres
+    if (filters.classe) {
+      result = result.filter(eleve => eleve.classe === filters.classe);
+    }
+
+    if (filters.status && filters.status.length > 0) {
+      result = result.filter(eleve => filters.status.includes(eleve.status));
+    }
+
+    if (filters.niveaux && filters.niveaux.length > 0) {
+      const niveauMapping = {
+        '1': ['6ème', '5ème', '4ème', '3ème'],
+        '2': ['2nde', '1ère', 'Terminale']
+      };
+
+      result = result.filter(eleve => {
+        for (const niveauId of filters.niveaux) {
+          const niveauClasses = niveauMapping[niveauId];
+          for (const niveauClasse of niveauClasses) {
+            if (eleve.classe.includes(niveauClasse)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      });
+    }
+
+    // Appliquer la recherche
+    if (term) {
+      result = result.filter(eleve => 
+        Object.values(eleve).some(
+          value => 
+            value && 
+            value.toString().toLowerCase().includes(term.toLowerCase())
+        )
+      );
+    }
+
+    setFilteredEleves(result);
+  };
 
   const columns = [
     {
@@ -279,26 +353,23 @@ const Eleves = () => {
           description="Gérez les dossiers des élèves de l'établissement"
           actions={
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline">
-                <Upload className="mr-2 h-4 w-4" />
-                Importer
-              </Button>
-              <Button variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Exporter
-              </Button>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Nouvel élève
-              </Button>
+              <ImportStudentsDialog onImportStudents={handleImportStudents} />
+              <ExportStudentsButton data={filteredEleves} />
+              <NewStudentDialog onAddStudent={handleAddStudent} />
             </div>
           }
         />
 
         <DataTable 
           columns={columns}
-          data={elevesMockData}
+          data={filteredEleves}
           onRowClick={(row) => setSelectedEleve(row)}
+          searchable={true}
+          searchTerm={searchTerm}
+          onSearch={handleSearch}
+          additionalFilters={
+            <FilterStudentsDialog onApplyFilters={handleApplyFilters} />
+          }
         />
       </div>
     </MainLayout>
