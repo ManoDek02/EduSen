@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -27,6 +28,15 @@ interface Note {
   commentaire: string;
   type: string;
 }
+
+// This adapter transforms @tanstack/react-table ColumnDef to our DataTable Column type
+const adaptColumns = (columns) => {
+  return columns.map(column => ({
+    key: column.accessorKey || column.id,
+    header: column.header,
+    cell: column.cell
+  }));
+};
 
 const Notes = () => {
   const navigate = useNavigate();
@@ -116,7 +126,9 @@ const Notes = () => {
     toast.success(`Export des notes en format ${format.toUpperCase()} effectué`);
   };
 
-  const columns = getNotesColumns(handleEditNote, handleDeleteNote);
+  // Get columns from NotesTableColumns and adapt them to the format DataTable expects
+  const tanstackColumns = getNotesColumns(handleEditNote, handleDeleteNote);
+  const columns = adaptColumns(tanstackColumns);
 
   return (
     <MainLayout>
