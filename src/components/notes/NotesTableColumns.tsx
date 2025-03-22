@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
@@ -30,22 +31,22 @@ export const getNotesColumns = (
     header: 'Note',
     cell: ({ row }) => {
       const note = parseFloat(row.original.note);
-      let badgeVariant = 'default';
+      let badgeVariant: "default" | "destructive" | "secondary" | "outline" = "default";
       let badgeClass = '';
       
       if (note < 8) {
-        badgeVariant = 'destructive';
+        badgeVariant = "destructive";
       } else if (note < 10) {
-        badgeVariant = 'secondary';
+        badgeVariant = "secondary";
         badgeClass = 'bg-orange-100 text-orange-800';
       } else if (note < 14) {
-        badgeVariant = 'secondary';
+        badgeVariant = "secondary";
         badgeClass = 'bg-yellow-100 text-yellow-800';
       } else if (note < 16) {
-        badgeVariant = 'secondary';
+        badgeVariant = "secondary";
         badgeClass = 'bg-green-100 text-green-800';
       } else {
-        badgeVariant = 'secondary';
+        badgeVariant = "secondary";
         badgeClass = 'bg-green-100 text-green-800 font-bold';
       }
       
