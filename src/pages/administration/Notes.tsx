@@ -34,7 +34,7 @@ const adaptColumns = (columns) => {
   return columns.map(column => ({
     key: column.accessorKey || column.id,
     header: column.header,
-    cell: column.cell
+    cell: column.cell ? (row) => column.cell({ row: { original: row } }) : undefined
   }));
 };
 
