@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Dialog,
@@ -63,7 +62,7 @@ export const NoteDetailDialog: React.FC<NoteDetailProps> = ({ note }) => {
               <h3 className="font-bold text-lg">{note.elevePrenom} {note.eleveNom}</h3>
               <p className="text-sm text-muted-foreground">{note.classe}</p>
             </div>
-            <Badge variant={badgeVariant} className="text-md px-3 py-1">
+            <Badge variant={badgeVariant as "default" | "destructive" | "secondary" | "outline"} className="text-md px-3 py-1">
               {note.note}/20
             </Badge>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,7 +10,7 @@ import { notesMockData } from '@/data/notesMockData';
 import NewNoteDialog from '@/components/notes/NewNoteDialog';
 import FilterNotesDialog from '@/components/notes/FilterNotesDialog';
 import { Button } from '@/components/ui/button';
-import { Download, FileSpreadsheet, FilePdf } from 'lucide-react';
+import { Download, FileSpreadsheet, File } from 'lucide-react';
 
 interface Note {
   id: string;
@@ -45,7 +44,6 @@ const Notes = () => {
   };
 
   const handleEditNote = (note: Note) => {
-    // Dans une application réelle, cette fonction ouvrirait une boîte de dialogue d'édition
     setSelectedNote(note);
     toast.info("Fonctionnalité d'édition à implémenter");
   };
@@ -79,7 +77,6 @@ const Notes = () => {
   const applyFiltersAndSearch = (data: Note[], term: string, filters: any) => {
     let result = [...data];
 
-    // Appliquer les filtres
     if (filters.trimestre) {
       result = result.filter(note => note.trimestre === filters.trimestre);
     }
@@ -101,7 +98,6 @@ const Notes = () => {
       }
     }
 
-    // Appliquer la recherche
     if (term) {
       result = result.filter(note => 
         Object.values(note).some(
@@ -120,7 +116,6 @@ const Notes = () => {
     toast.success(`Export des notes en format ${format.toUpperCase()} effectué`);
   };
 
-  // Configurer les colonnes du tableau
   const columns = getNotesColumns(handleEditNote, handleDeleteNote);
 
   return (
@@ -145,7 +140,7 @@ const Notes = () => {
               </div>
               <div className="flex items-center">
                 <Button variant="outline" size="sm" onClick={() => handleExport('pdf')}>
-                  <FilePdf className="mr-2 h-4 w-4" />
+                  <File className="mr-2 h-4 w-4" />
                   PDF
                 </Button>
               </div>

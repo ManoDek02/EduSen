@@ -40,7 +40,7 @@ export const getNotesColumns = (onEdit, onDelete) => {
         
         return (
           <div className="flex items-baseline gap-2">
-            <Badge variant={badgeVariant} className="text-md font-bold">
+            <Badge variant={badgeVariant as "default" | "destructive" | "secondary" | "outline" | "success"} className="text-md font-bold">
               {row.note}/20
             </Badge>
             {row.coefficient > 1 && (
