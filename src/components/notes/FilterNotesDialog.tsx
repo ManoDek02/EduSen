@@ -4,22 +4,16 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Filter } from 'lucide-react';
+import TrimestreMatiereSelects from './filter/TrimestreMatiereSelects';
+import TypesEvaluationCheckboxes from './filter/TypesEvaluationCheckboxes';
+import NoteRangeInputs from './filter/NoteRangeInputs';
+import FilterDialogActions from './filter/FilterDialogActions';
 
 interface FilterNotesDialogProps {
   onApplyFilters: (filters: any) => void;
@@ -85,111 +79,29 @@ const FilterNotesDialog: React.FC<FilterNotesDialogProps> = ({ onApplyFilters })
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="trimestre">Trimestre</Label>
-              <Select 
-                value={trimestre} 
-                onValueChange={setTrimestre}
-              >
-                <SelectTrigger id="trimestre">
-                  <SelectValue placeholder="Tous les trimestres" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Tous les trimestres</SelectItem>
-                  <SelectItem value="1">Trimestre 1</SelectItem>
-                  <SelectItem value="2">Trimestre 2</SelectItem>
-                  <SelectItem value="3">Trimestre 3</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="matiere">Matière</Label>
-              <Select 
-                value={matiere} 
-                onValueChange={setMatiere}
-              >
-                <SelectTrigger id="matiere">
-                  <SelectValue placeholder="Toutes les matières" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Toutes les matières</SelectItem>
-                  {matieres.map(m => (
-                    <SelectItem key={m} value={m}>{m}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <TrimestreMatiereSelects 
+            trimestre={trimestre}
+            setTrimestre={setTrimestre}
+            matiere={matiere}
+            setMatiere={setMatiere}
+            matieres={matieres}
+          />
           
-          <div className="space-y-2">
-            <Label>Types d'évaluation</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {typesEvaluationOptions.map(type => (
-                <div key={type} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={`type-${type}`}
-                    checked={typesEvaluation.includes(type)}
-                    onCheckedChange={(checked) => 
-                      handleTypeChange(type, checked === true)
-                    }
-                  />
-                  <label
-                    htmlFor={`type-${type}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {type}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
+          <TypesEvaluationCheckboxes 
+            typesEvaluation={typesEvaluation}
+            typesEvaluationOptions={typesEvaluationOptions}
+            handleTypeChange={handleTypeChange}
+          />
           
-          <div className="space-y-2">
-            <Label>Plage de notes</Label>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="min-note" className="w-12">Min:</Label>
-                <input
-                  type="number"
-                  id="min-note"
-                  min="0"
-                  max="20"
-                  step="0.5"
-                  value={noteRange.min !== undefined ? noteRange.min : ''}
-                  onChange={(e) => setNoteRange({
-                    ...noteRange,
-                    min: e.target.value ? parseFloat(e.target.value) : undefined
-                  })}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="max-note" className="w-12">Max:</Label>
-                <input
-                  type="number"
-                  id="max-note"
-                  min="0"
-                  max="20"
-                  step="0.5"
-                  value={noteRange.max !== undefined ? noteRange.max : ''}
-                  onChange={(e) => setNoteRange({
-                    ...noteRange,
-                    max: e.target.value ? parseFloat(e.target.value) : undefined
-                  })}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-          </div>
+          <NoteRangeInputs 
+            noteRange={noteRange}
+            setNoteRange={setNoteRange}
+          />
         </div>
-        <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={resetFilters}>
-            Réinitialiser
-          </Button>
-          <Button onClick={applyFilters}>Appliquer les filtres</Button>
-        </DialogFooter>
+        <FilterDialogActions 
+          resetFilters={resetFilters}
+          applyFilters={applyFilters}
+        />
       </DialogContent>
     </Dialog>
   );
