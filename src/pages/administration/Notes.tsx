@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -27,6 +26,16 @@ interface Note {
   dateEvaluation: string;
   commentaire: string;
   type: string;
+}
+
+interface NoteFilters {
+  trimestre?: number;
+  matiere?: string;
+  typesEvaluation?: string[];
+  noteRange?: {
+    min?: number;
+    max?: number;
+  };
 }
 
 // This adapter transforms @tanstack/react-table ColumnDef to our DataTable Column type
@@ -84,7 +93,7 @@ const Notes = () => {
     applyFiltersAndSearch(notes, term, {});
   };
 
-  const applyFiltersAndSearch = (data: Note[], term: string, filters: any) => {
+  const applyFiltersAndSearch = (data: Note[], term: string, filters: NoteFilters) => {
     let result = [...data];
 
     if (filters.trimestre) {
