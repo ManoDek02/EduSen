@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { School } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
+import { Users } from '@/types/user';
 
 // Schéma de validation pour le formulaire de connexion
 const loginSchema = z.object({
@@ -42,7 +42,7 @@ const Index = () => {
     
     // Simuler un délai de connexion
     setTimeout(() => {
-      const user = (MOCK_USERS as any)[data.matricule];
+      const user = (MOCK_USERS as unknown as Users)[data.matricule];
       
       if (user) {
         // Stocker les informations de l'utilisateur dans localStorage

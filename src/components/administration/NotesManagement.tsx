@@ -47,22 +47,18 @@ export const NotesManagement = () => {
   };
 
   const handleUpdateNote = async (noteId: string, newNote: number) => {
-    try {
-      // TODO: Remplacer par l'appel API réel
-      await fetch(`/api/notes/${noteId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ note: newNote }),
-      });
-      
-      setNotes(notes.map(note => 
-        note.id === noteId ? { ...note, note: newNote } : note
-      ));
-    } catch (error) {
-      throw error;
-    }
+    // TODO: Remplacer par l'appel API réel
+    await fetch(`/api/notes/${noteId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ note: newNote }),
+    });
+    
+    setNotes(notes.map(note => 
+      note.id === noteId ? { ...note, note: newNote } : note
+    ));
   };
 
   const filteredNotes = notes.filter(note =>
