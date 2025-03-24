@@ -41,26 +41,28 @@ const BulletinDetailDialog = ({ bulletin, open, onOpenChange }: BulletinDetailDi
   if (printMode) {
     return (
       <div className="print-container">
-        <style jsx global>{`
-          @media print {
-            body * {
-              visibility: hidden;
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @media print {
+              body * {
+                visibility: hidden;
+              }
+              .print-container, .print-container * {
+                visibility: visible;
+              }
+              .print-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+              }
+              @page {
+                size: A4;
+                margin: 1cm;
+              }
             }
-            .print-container, .print-container * {
-              visibility: visible;
-            }
-            .print-container {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
-            @page {
-              size: A4;
-              margin: 1cm;
-            }
-          }
-        `}</style>
+          `
+        }} />
         <BulletinTemplate bulletin={bulletin} printMode={true} />
       </div>
     );
