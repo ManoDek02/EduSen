@@ -95,15 +95,6 @@ const Index = () => {
         {/* Left sidebar */}
         <div className="w-full md:w-80 bg-[#0046AD] text-white p-6 flex flex-col">
           <h2 className="text-xl font-bold mb-8">Connexion</h2>
-          
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/0be1fe71-c0d6-45e2-89bc-8152be82efe1.png" 
-              alt="Logo EDUSn" 
-              className="w-32 mx-auto opacity-30"
-            />
-          </div>
-          
           <div className="mt-auto">
             <p className="text-sm opacity-70">© 2023 EDUSn</p>
             <p className="text-sm opacity-70">Gestion scolaire</p>

@@ -8,6 +8,7 @@ import DataTable from '@/components/tables/DataTable';
 import { getNotesColumns } from '@/components/notes/NotesTableColumns';
 import { notesMockData } from '@/data/notesMockData';
 import NewNoteDialog from '@/components/notes/NewNoteDialog';
+import { EditNoteDialog } from '@/components/notes/EditNoteDialog';
 import FilterNotesDialog from '@/components/notes/FilterNotesDialog';
 import { Button } from '@/components/ui/button';
 import { Download, FileSpreadsheet, File } from 'lucide-react';
@@ -55,6 +56,7 @@ const Notes = () => {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleAddNote = (newNote: Note) => {
     const updatedNotes = [...notes, newNote];
@@ -64,7 +66,33 @@ const Notes = () => {
 
   const handleEditNote = (note: Note) => {
     setSelectedNote(note);
-    toast.info("Fonctionnalité d'édition à implémenter");
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveNote = async (updatedNote: Note) => {
+    try {
+      // TODO: Remplacer par l'appel API réel
+      const response = await fetch(`/api/notes/${updatedNote.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedNote),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour de la note');
+      }
+
+      const updatedNotes = notes.map(note => 
+        note.id === updatedNote.id ? updatedNote : note
+      );
+      setNotes(updatedNotes);
+      applyFiltersAndSearch(updatedNotes, searchTerm, {});
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
   const handleDeleteNote = (note: Note) => {
@@ -199,6 +227,13 @@ const Notes = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditNoteDialog
+        note={selectedNote}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSave={handleSaveNote}
+      />
     </MainLayout>
   );
 };
