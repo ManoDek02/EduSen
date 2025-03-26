@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { School } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
+import { Users } from '@/types/user';
 
 // Schéma de validation pour le formulaire de connexion
 const loginSchema = z.object({
@@ -42,7 +42,7 @@ const Index = () => {
     
     // Simuler un délai de connexion
     setTimeout(() => {
-      const user = (MOCK_USERS as any)[data.matricule];
+      const user = (MOCK_USERS as unknown as Users)[data.matricule];
       
       if (user) {
         // Stocker les informations de l'utilisateur dans localStorage
@@ -95,15 +95,6 @@ const Index = () => {
         {/* Left sidebar */}
         <div className="w-full md:w-80 bg-[#0046AD] text-white p-6 flex flex-col">
           <h2 className="text-xl font-bold mb-8">Connexion</h2>
-          
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/0be1fe71-c0d6-45e2-89bc-8152be82efe1.png" 
-              alt="Logo EDUSn" 
-              className="w-32 mx-auto opacity-30"
-            />
-          </div>
-          
           <div className="mt-auto">
             <p className="text-sm opacity-70">© 2023 EDUSn</p>
             <p className="text-sm opacity-70">Gestion scolaire</p>

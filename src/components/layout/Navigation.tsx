@@ -1,100 +1,15 @@
-
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  GraduationCap,
-  Users,
-  UserCircle,
-  Calendar,
-  FileText,
-  ChevronDown,
-  Menu,
-  X,
-  School,
-  LogOut,
-  BookOpen,
-  ClipboardList
-} from "lucide-react";
+import { School, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { toast } from "sonner";
-
-type User = {
-  matricule: string;
-  role: string;
-  name: string;
-};
-
-type NavItemProps = {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  subItems?: { to: string; label: string }[];
-  currentPath: string;
-};
-
-const NavItem = ({ to, icon, label, subItems, currentPath }: NavItemProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const isActive = currentPath === to || currentPath.startsWith(`${to}/`);
-  const hasSubItems = Array.isArray(subItems) && subItems.length > 0;
-
-  return (
-    <div className="mb-1">
-      <Link
-        to={hasSubItems ? "#" : to}
-        onClick={hasSubItems ? (e) => {
-          e.preventDefault();
-          setIsOpen(!isOpen);
-        } : undefined}
-        className={cn(
-          "flex items-center justify-between w-full px-3 py-2 rounded-md text-sm font-medium transition-colors",
-          isActive
-            ? "bg-white text-[#0046AD]"
-            : "text-white hover:bg-[#0051c7] hover:text-white"
-        )}
-      >
-        <div className="flex items-center gap-3">
-          <div className={isActive ? "text-[#0046AD]" : "text-white"}>{icon}</div>
-          <span>{label}</span>
-        </div>
-        {hasSubItems && (
-          <ChevronDown
-            size={16}
-            className={cn("text-white transition-transform", 
-              isOpen && "transform rotate-180"
-            )}
-          />
-        )}
-      </Link>
-      
-      {hasSubItems && isOpen && (
-        <div className="ml-10 mt-1 space-y-1 animate-slide-down">
-          {subItems.map((subItem) => (
-            <Link
-              key={subItem.to}
-              to={subItem.to}
-              className={cn(
-                "block px-3 py-2 rounded-md text-sm transition-colors",
-                currentPath === subItem.to
-                  ? "bg-white/10 text-white font-medium"
-                  : "text-white/80 hover:bg-[#0051c7] hover:text-white"
-              )}
-            >
-              {subItem.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import { useNavigation } from "@/hooks/use-navigation";
+import { NavItem } from "./NavItem";
+import { UserProfile } from "./UserProfile";
 
 const Navigation = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -153,8 +68,7 @@ const Navigation = () => {
             subItems: [
               { to: "/professeurs/classes", label: "Liste des classes" },
               { to: "/professeurs/emploi-du-temps", label: "Emploi du temps" },
-              { to: "/professeurs/notes", label: "Gestion des notes" },
-              { to: "/professeurs/syllabus", label: "Syllabus" },
+              { to: "/professeurs/notes", label: "Gestion des notes" }
             ]
           }
         ];
@@ -198,7 +112,6 @@ const Navigation = () => {
   };
 
   const navItems = getNavItems();
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
     <>
@@ -209,7 +122,12 @@ const Navigation = () => {
             <School className="text-white" size={24} />
             <span className="font-medium text-lg">EDUSn</span>
           </div>
-          <Button variant="ghost" size="icon" className="text-white" onClick={toggleMenu}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-white" 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </Button>
         </div>
@@ -249,38 +167,9 @@ const Navigation = () => {
           </div>
 
           {/* User profile section */}
-          <div className="p-4 border-t border-white/10">
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar>
-                <AvatarFallback className="bg-white/10 text-white">
-                  {user?.name.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium">{user?.name || "Utilisateur"}</p>
-                <p className="text-xs text-white/70">{user?.role || "Rôle"}</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full border-white/20 text-white hover:bg-white/10 hover:text-white"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} className="mr-2" />
-              Déconnexion
-            </Button>
-          </div>
+          <UserProfile user={user} onLogout={handleLogout} />
         </div>
       </aside>
-
-      {/* Mobile overlay */}
-      {isMobile && isMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-30 backdrop-blur-sm animate-fade-in"
-          onClick={toggleMenu}
-        />
-      )}
     </>
   );
 };
