@@ -153,7 +153,8 @@ const Navigation = () => {
             subItems: [
               { to: "/professeurs/classes", label: "Liste des classes" },
               { to: "/professeurs/emploi-du-temps", label: "Emploi du temps" },
-              { to: "/professeurs/notes", label: "Gestion des notes" }
+              { to: "/professeurs/notes", label: "Gestion des notes" },
+              { to: "/professeurs/syllabus", label: "Syllabus" },
             ]
           }
         ];

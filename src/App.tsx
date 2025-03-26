@@ -12,6 +12,10 @@ import Professeurs from "./pages/administration/Professeurs";
 import EmploiDuTemps from "./pages/administration/EmploiDuTemps";
 import Notes from "./pages/administration/Notes";
 import Bulletins from "./pages/administration/Bulletins";
+import EmploiDuTempsProf from "./pages/Professeur/EmploiDuTempsProf";
+import ElevesProf from "./pages/Professeur/ElevesProf";
+import SyllabusProf from "./pages/Professeur/SyllabusProf";
+
 
 // Routes pour les élèves
 import Syllabus from "./pages/eleves/Syllabus";
@@ -40,9 +44,10 @@ const App = () => (
           <Route path="/administration/bulletins" element={<Bulletins />} />
           
           {/* Routes Professeurs */}
-          <Route path="/professeurs/classes" element={<Professeurs />} />
-          <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/professeurs/classes" element={<ElevesProf />} />
+          <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTempsProf />} />
           <Route path="/professeurs/notes" element={<Eleves />} />
+          <Route path="/professeurs/syllabus" element={<SyllabusProf />} />
           
           {/* Routes Élèves */}
           <Route path="/eleves/syllabus" element={<Syllabus />} />
