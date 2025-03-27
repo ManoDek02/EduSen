@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,16 +26,18 @@ import CommentaireField from './form/CommentaireField';
 
 interface NewNoteDialogProps {
   onAddNote: (note) => void;
+  selectedClass: string;
+  selectedMatiere: string;
 }
 
-const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote }) => {
+const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote, selectedClass, selectedMatiere }) => {
   const [open, setOpen] = React.useState(false);
   
   const form = useForm<NoteFormValues>({
     resolver: zodResolver(noteFormSchema),
     defaultValues: {
       eleveId: '',
-      matiere: '',
+      matiere: selectedMatiere,
       note: 0,
       coefficient: 1,
       professeur: '',
@@ -47,6 +48,12 @@ const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote }) => {
     },
   });
 
+  React.useEffect(() => {
+    if (selectedMatiere) {
+      form.setValue('matiere', selectedMatiere);
+    }
+  }, [selectedMatiere, form]);
+
   const onSubmit = (data: NoteFormValues) => {
     const eleve = elevesMockData.find(e => e.id === data.eleveId);
     
@@ -55,13 +62,18 @@ const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote }) => {
       return;
     }
 
+    if (eleve.classe !== selectedClass) {
+      toast.error('L\'élève n\'appartient pas à la classe sélectionnée');
+      return;
+    }
+
     const newNote = {
       id: Math.random().toString(36).substring(2, 9),
       eleveId: data.eleveId,
       eleveNom: eleve.nom,
       elevePrenom: eleve.prenom,
-      classe: eleve.classe,
-      matiere: data.matiere,
+      classe: selectedClass,
+      matiere: selectedMatiere,
       note: data.note,
       coefficient: data.coefficient,
       professeur: data.professeur,
@@ -89,13 +101,13 @@ const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote }) => {
         <DialogHeader>
           <DialogTitle>Ajouter une nouvelle note</DialogTitle>
           <DialogDescription>
-            Saisissez les informations de la note pour un élève
+            Saisissez les informations de la note pour un élève de {selectedClass} en {selectedMatiere}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <EleveSelect form={form} />
-            <MatiereTypeFields form={form} />
+            <EleveSelect form={form} selectedClass={selectedClass} />
+            <MatiereTypeFields form={form} selectedMatiere={selectedMatiere} />
             <NoteDetailsFields form={form} />
             <ProfesseurDateFields form={form} />
             <CommentaireField form={form} />
