@@ -1,15 +1,18 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { School, Menu, X } from "lucide-react";
+import { School, Menu, X, LayoutDashboard, Users, UserCircle, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
 import { NavItem } from "./NavItem";
 import { UserProfile } from "./UserProfile";
+import { User } from '@/types/user';
+import { toast } from 'sonner';
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -37,13 +40,13 @@ const Navigation = () => {
       case 'admin':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/administration/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/administration",
-            icon: <School size={20} />,
+            icon: School,
             label: "Administration",
             subItems: [
               { to: "/administration/notes", label: "Gestion des notes" },
@@ -57,31 +60,32 @@ const Navigation = () => {
       case 'professeur':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/professeurs/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/professeurs",
-            icon: <UserCircle size={20} />,
+            icon: UserCircle,
             label: "Professeurs",
             subItems: [
               { to: "/professeurs/classes", label: "Liste des classes" },
               { to: "/professeurs/emploi-du-temps", label: "Emploi du temps" },
-              { to: "/professeurs/notes", label: "Gestion des notes" }
+              { to: "/professeurs/notes", label: "Gestion des notes" },
+              { to: "/professeurs/syllabus", label: "Syllabus" }
             ]
           }
         ];
       case 'eleve':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/eleves/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/eleves",
-            icon: <GraduationCap size={20} />,
+            icon: GraduationCap,
             label: "Élèves",
             subItems: [
               { to: "/eleves/syllabus", label: "Syllabus" },
@@ -96,13 +100,13 @@ const Navigation = () => {
       case 'parent':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/parents/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/parents",
-            icon: <Users size={20} />,
+            icon: Users,
             label: "Parents"
           }
         ];

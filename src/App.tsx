@@ -19,7 +19,11 @@ import SyllabusProf from "./pages/Professeur/SyllabusProf";
 
 // Routes pour les élèves
 import Syllabus from "./pages/eleves/Syllabus";
-
+import NotesProf from "./pages/Professeur/NotesProf";
+import DashboardAdmin from "./pages/administration/DashboardAdmin";
+import DashboardProf from "./pages/Professeur/DashboardProf";
+import DashboardEleves from "./pages/Eleve/DashboardEleve";
+import DashboardParents from "./pages/Parent/DashboardParent";
 // Routes pour les professeurs
 // Ces composants seront créés à la demande
 
@@ -35,7 +39,11 @@ const App = () => (
           {/* Page d'accueil et de connexion */}
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          
+          <Route path="/administration/dashboard" element={<DashboardAdmin />} />
+          <Route path="/parents/dashboard" element={<DashboardParents />} />
+          <Route path="/professeurs/dashboard" element={<DashboardProf />} />
+          <Route path="/eleves/dashboard" element={<DashboardEleves />} />
+
           {/* Routes Administration */}
           <Route path="/administration/eleves" element={<Eleves />} />
           <Route path="/administration/professeurs" element={<Professeurs />} />
@@ -46,7 +54,7 @@ const App = () => (
           {/* Routes Professeurs */}
           <Route path="/professeurs/classes" element={<ElevesProf />} />
           <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTempsProf />} />
-          <Route path="/professeurs/notes" element={<Eleves />} />
+          <Route path="/professeurs/notes" element={<NotesProf />} />
           <Route path="/professeurs/syllabus" element={<SyllabusProf />} />
           
           {/* Routes Élèves */}
