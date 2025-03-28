@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +8,7 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import Eleves from "./pages/administration/Eleves";
 import Professeurs from "./pages/administration/Professeurs";
-import EmploiDuTemps from "./pages/administration/EmploiDuTemps";
+import { EmploiDuTemps as EmploiDuTempsAdmin } from "./pages/administration/EmploiDuTemps";
 import Notes from "./pages/administration/Notes";
 import Bulletins from "./pages/administration/Bulletins";
 import EmploiDuTempsProf from "./pages/Professeur/EmploiDuTempsProf";
@@ -36,11 +35,15 @@ const App = () => (
           {/* Page d'accueil et de connexion */}
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          
+          <Route path="/administration/dashboard" element={<DashboardAdmin />} />
+          <Route path="/parents/dashboard" element={<DashboardParents />} />
+          <Route path="/professeurs/dashboard" element={<DashboardProf />} />
+          <Route path="/eleves/dashboard" element={<DashboardEleves />} />
+
           {/* Routes Administration */}
           <Route path="/administration/eleves" element={<Eleves />} />
           <Route path="/administration/professeurs" element={<Professeurs />} />
-          <Route path="/administration/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/administration/emploi-du-temps" element={<EmploiDuTempsAdmin />} />
           <Route path="/administration/notes" element={<Notes />} />
           <Route path="/administration/bulletins" element={<Bulletins />} />
           
@@ -53,8 +56,8 @@ const App = () => (
           {/* Routes Élèves */}
           <Route path="/eleves/syllabus" element={<Syllabus />} />
           <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemps />} />
-          <Route path="/eleves/notes" element={<Eleves />} />
-          <Route path="/eleves/bulletin" element={<Bulletins />} />
+          <Route path="/eleves/notes" element={<NotesEleve />} />
+          <Route path="/eleves/bulletin" element={<Bulletin />} />
           <Route path="/eleves/contact-professeurs" element={<Professeurs />} />
           <Route path="/eleves/baki" element={<Eleves />} />
           

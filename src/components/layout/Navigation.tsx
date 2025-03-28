@@ -1,21 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users, LucideIcon } from "lucide-react";
+import { School, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
 import { NavItem } from "./NavItem";
 import { UserProfile } from "./UserProfile";
-import { toast } from 'sonner';
-import { User, NavItem as NavItemType } from '@/types/navigation';
-
-interface NavItem {
-  to: string;
-  icon: LucideIcon;
-  label: string;
-  subItems?: { to: string; label: string; }[];
-}
 
 const Navigation = () => {
   const location = useLocation();
@@ -48,7 +39,7 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: LayoutDashboard,
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
@@ -68,7 +59,7 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: LayoutDashboard,
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
@@ -87,7 +78,7 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: LayoutDashboard,
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
@@ -108,7 +99,7 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: LayoutDashboard,
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
