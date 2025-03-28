@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { School } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
-import { Users } from '@/types/user';
+import { User } from '@/types/navigation';
 
 // Schéma de validation pour le formulaire de connexion
 const loginSchema = z.object({
@@ -19,11 +19,11 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 // Données de test pour simuler les différents profils
-const MOCK_USERS = {
-  "ADMIN001": { role: "admin", name: "Admin" },
-  "PROF001": { role: "professeur", name: "Marie Dubois" },
-  "ELEVE001": { role: "eleve", name: "Alex Martin" },
-  "PARENT001": { role: "parent", name: "Paul Dubois" }
+const MOCK_USERS: Record<string, Omit<User, 'id' | 'matricule' | 'email'>> = {
+  "ADMIN001": { role: "admin", name: "Admin", nom: "Admin", prenom: "Admin" },
+  "PROF001": { role: "professeur", name: "Marie Dubois", nom: "Dubois", prenom: "Marie" },
+  "ELEVE001": { role: "eleve", name: "Alex Martin", nom: "Martin", prenom: "Alex" },
+  "PARENT001": { role: "parent", name: "Paul Dubois", nom: "Dubois", prenom: "Paul" }
 };
 
 const Index = () => {
@@ -42,14 +42,18 @@ const Index = () => {
     
     // Simuler un délai de connexion
     setTimeout(() => {
-      const user = (MOCK_USERS as unknown as Users)[data.matricule];
+      const user = MOCK_USERS[data.matricule];
       
       if (user) {
         // Stocker les informations de l'utilisateur dans localStorage
         localStorage.setItem('currentUser', JSON.stringify({
+          id: data.matricule,
           matricule: data.matricule,
           role: user.role,
-          name: user.name
+          name: user.name,
+          nom: user.nom,
+          prenom: user.prenom,
+          email: `${user.prenom.toLowerCase()}.${user.nom.toLowerCase()}@example.com`
         }));
         
         // Rediriger en fonction du rôle
@@ -70,7 +74,7 @@ const Index = () => {
             navigate("/");
         }
         
-        toast.success(`Bienvenue, ${user.name}`);
+        toast.success(`Bienvenue, ${user.prenom} ${user.nom}`);
       } else {
         toast.error("Matricule invalide");
         setIsLoading(false);
@@ -82,8 +86,8 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-[#0046AD]">
       {/* Header */}
       <header className="bg-[#0046AD] text-white p-4 shadow-md">
-        <div className="container mx-auto flex items-center">
-          <div className="flex items-center gap-2">
+        <div className="container flex items-left">
+          <div className="flex items-left gap-2">
             <School className="h-8 w-8" />
             <h1 className="text-2xl font-bold">EDUSn</h1>
           </div>
@@ -106,7 +110,7 @@ const Index = () => {
           <div className="max-w-md mx-auto">
             <h1 className="text-2xl md:text-3xl font-bold mb-2 text-[#0046AD]">Bienvenue sur EDUSn</h1>
             <p className="text-gray-600 mb-8">Veuillez saisir votre matricule pour accéder à la plateforme</p>
-            
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -122,10 +126,10 @@ const Index = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="pt-2">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-[#0046AD] hover:bg-[#003c91]"
                     disabled={isLoading}
                   >

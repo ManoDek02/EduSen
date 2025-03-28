@@ -1,25 +1,19 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navigation from './Navigation';
 import { cn } from '@/lib/utils';
+import { User } from '@/types/navigation';
 
-type User = {
-  matricule: string;
-  role: string;
-  name: string;
-} | null;
-
-type MainLayoutProps = {
+interface MainLayoutProps {
   children: React.ReactNode;
   title?: string;
-};
+}
 
 const MainLayout = ({ children, title }: MainLayoutProps) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Récupérer l'utilisateur connecté depuis localStorage

@@ -19,6 +19,7 @@ import SyllabusProf from "./pages/Professeur/SyllabusProf";
 
 // Routes pour les élèves
 import Syllabus from "./pages/eleves/Syllabus";
+import NotesProf from "./pages/Professeur/NotesProf";
 
 // Routes pour les professeurs
 // Ces composants seront créés à la demande
@@ -46,7 +47,7 @@ const App = () => (
           {/* Routes Professeurs */}
           <Route path="/professeurs/classes" element={<ElevesProf />} />
           <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTempsProf />} />
-          <Route path="/professeurs/notes" element={<Eleves />} />
+          <Route path="/professeurs/notes" element={<NotesProf />} />
           <Route path="/professeurs/syllabus" element={<SyllabusProf />} />
           
           {/* Routes Élèves */}

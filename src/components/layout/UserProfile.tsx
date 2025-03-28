@@ -16,11 +16,11 @@ export const UserProfile = ({ user, onLogout }: UserProfileProps) => {
       <div className="flex items-center gap-3 mb-4">
         <Avatar>
           <AvatarFallback className="bg-white/10">
-            {user.name.charAt(0).toUpperCase()}
+            {user.prenom[0]}{user.nom[0]}
           </AvatarFallback>
         </Avatar>
         <div>
-          <p className="text-sm font-medium">{user.name}</p>
+          <p className="text-sm font-medium">{user.prenom} {user.nom}</p>
           <p className="text-xs text-white/70">{user.role}</p>
         </div>
       </div>
