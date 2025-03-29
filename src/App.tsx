@@ -15,7 +15,7 @@ import EmploiDuTempsProf from "./pages/Professeur/EmploiDuTempsProf";
 import ElevesProf from "./pages/Professeur/ElevesProf";
 import SyllabusProf from "./pages/Professeur/SyllabusProf";
 import Notifications from "./pages/eleves/Notifications";
-import ContactProfesseurs from "./pages/eleves/Contactprofesseurs";
+import ContactProfesseurs from "./pages/eleves/ContactProfesseurs";
 import Baki from "./pages/eleves/Baki";
 import DashboardEleve from "./pages/eleves/DashboardEleve";
 
