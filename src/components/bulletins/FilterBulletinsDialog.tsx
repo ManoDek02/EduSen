@@ -1,163 +1,147 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Filter } from 'lucide-react';
-import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useForm } from 'react-hook-form';
-
-const classeOptions = [
-  '6ème B',
-  '5ème A',
-  '4ème C',
-  '3ème A',
-  '2nde',
-  '1ère ES',
-  'Terminale S'
-];
-
-const statusOptions = [
-  { id: 'brouillon', label: 'Brouillon' },
-  { id: 'publié', label: 'Publié' },
-  { id: 'archivé', label: 'Archivé' },
-];
+import { Filter } from 'lucide-react';
 
 interface FilterBulletinsDialogProps {
-  onApplyFilters: (filters: any) => void;
+  onApplyFilters: (filters: {
+    trimestre?: string;
+    classe?: string;
+    status?: string[];
+  }) => void;
+  activeFilters?: {
+    trimestre?: string;
+    classe?: string;
+    status?: string[];
+  };
+  trigger?: React.ReactNode;
 }
 
-const FilterBulletinsDialog = ({ onApplyFilters }: FilterBulletinsDialogProps) => {
+const FilterBulletinsDialog: React.FC<FilterBulletinsDialogProps> = ({ 
+  onApplyFilters, 
+  activeFilters = {},
+  trigger
+}) => {
   const [open, setOpen] = useState(false);
-  const form = useForm({
-    defaultValues: {
-      trimestre: '',
-      classe: '',
-      status: []
-    }
-  });
+  const [filters, setFilters] = useState(activeFilters);
 
-  const handleSubmit = (data) => {
-    onApplyFilters({
-      ...data,
-      trimestre: data.trimestre ? parseInt(data.trimestre) : null
-    });
+  const handleApply = () => {
+    onApplyFilters(filters);
+    setOpen(false);
+  };
+
+  const handleReset = () => {
+    setFilters({});
+    onApplyFilters({});
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Filter className="mr-2 h-4 w-4" />
-          Filtrer
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Filtres
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Filtrer les bulletins</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="trimestre"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Trimestre</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tous les trimestres" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Tous les trimestres</SelectItem>
-                      <SelectItem value="1">Trimestre 1</SelectItem>
-                      <SelectItem value="2">Trimestre 2</SelectItem>
-                      <SelectItem value="3">Trimestre 3</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Trimestre</Label>
+            <Select
+              value={filters.trimestre}
+              onValueChange={(value) => setFilters({ ...filters, trimestre: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner un trimestre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Trimestre 1</SelectItem>
+                <SelectItem value="2">Trimestre 2</SelectItem>
+                <SelectItem value="3">Trimestre 3</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="classe"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Classe</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Toutes les classes" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Toutes les classes</SelectItem>
-                      {classeOptions.map(classe => (
-                        <SelectItem key={classe} value={classe}>
-                          {classe}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
+          <div className="space-y-2">
+            <Label>Classe</Label>
+            <Select
+              value={filters.classe}
+              onValueChange={(value) => setFilters({ ...filters, classe: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner une classe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3ème A">3ème A</SelectItem>
+                <SelectItem value="3ème B">3ème B</SelectItem>
+                <SelectItem value="4ème A">4ème A</SelectItem>
+                <SelectItem value="4ème B">4ème B</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <FormField
-              control={form.control}
-              name="status"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Statut</FormLabel>
-                  <div className="space-y-2">
-                    {statusOptions.map((option) => (
-                      <div key={option.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={option.id}
-                          onCheckedChange={(checked) => {
-                            const currentValues = form.getValues().status || [];
-                            const newValues = checked
-                              ? [...currentValues, option.id]
-                              : currentValues.filter(v => v !== option.id);
-                            form.setValue('status', newValues);
-                          }}
-                        />
-                        <label htmlFor={option.id} className="text-sm">
-                          {option.label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-between pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  form.reset({
-                    trimestre: '',
-                    classe: '',
-                    status: []
-                  });
-                  onApplyFilters({});
-                }}
-              >
-                Réinitialiser
-              </Button>
-              <Button type="submit">Appliquer les filtres</Button>
+          <div className="space-y-2">
+            <Label>Statut</Label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="brouillon"
+                  checked={filters.status?.includes('brouillon')}
+                  onCheckedChange={(checked) => {
+                    const newStatus = checked
+                      ? [...(filters.status || []), 'brouillon']
+                      : (filters.status || []).filter(s => s !== 'brouillon');
+                    setFilters({ ...filters, status: newStatus });
+                  }}
+                />
+                <Label htmlFor="brouillon">Brouillon</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="publie"
+                  checked={filters.status?.includes('publié')}
+                  onCheckedChange={(checked) => {
+                    const newStatus = checked
+                      ? [...(filters.status || []), 'publié']
+                      : (filters.status || []).filter(s => s !== 'publié');
+                    setFilters({ ...filters, status: newStatus });
+                  }}
+                />
+                <Label htmlFor="publie">Publié</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="archive"
+                  checked={filters.status?.includes('archivé')}
+                  onCheckedChange={(checked) => {
+                    const newStatus = checked
+                      ? [...(filters.status || []), 'archivé']
+                      : (filters.status || []).filter(s => s !== 'archivé');
+                    setFilters({ ...filters, status: newStatus });
+                  }}
+                />
+                <Label htmlFor="archive">Archivé</Label>
+              </div>
             </div>
-          </form>
-        </Form>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={handleReset}>
+            Réinitialiser
+          </Button>
+          <Button onClick={handleApply}>
+            Appliquer
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

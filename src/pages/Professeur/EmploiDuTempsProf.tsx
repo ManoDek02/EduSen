@@ -1,13 +1,12 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Download, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { professeurConnecte } from '@/types/professeur';
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 const heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
@@ -18,79 +17,68 @@ type Cours = {
   matiere: string;
   professeur: string;
   salle: string;
-  jour: number; // 0 = Lundi, 1 = Mardi, etc.
-  debut: number; // index dans le tableau heures
-  duree: number; // nombre de créneaux
+  jour: number;
+  debut: number;
+  duree: number;
   couleur: string;
 };
 
-// Exemples de cours
+// Exemples de cours du professeur
 const coursMockData: Cours[] = [
   {
     id: '1',
-    classe: '3ème A',
+    classe: 'TS1',
     matiere: 'Mathématiques',
-    professeur: 'Mme Dubois',
+    professeur: professeurConnecte.id,
     salle: 'S-102',
-    jour: 0, // Lundi
-    debut: 0, // 8h
-    duree: 2, // 2h
+    jour: 0,
+    debut: 0,
+    duree: 2,
     couleur: 'bg-blue-100 border-blue-300 text-blue-800'
   },
   {
     id: '2',
-    classe: '3ème A',
-    matiere: 'Français',
-    professeur: 'M. Bernard',
-    salle: 'S-105',
-    jour: 0, // Lundi
-    debut: 3, // 11h
-    duree: 2, // 2h
-    couleur: 'bg-green-100 border-green-300 text-green-800'
+    classe: 'TS2',
+    matiere: 'Mathématiques',
+    professeur: professeurConnecte.id,
+    salle: 'S-102',
+    jour: 1,
+    debut: 1,
+    duree: 2,
+    couleur: 'bg-blue-100 border-blue-300 text-blue-800'
   },
   {
     id: '3',
-    classe: '3ème A',
-    matiere: 'Histoire-Géo',
-    professeur: 'M. Martin',
-    salle: 'S-201',
-    jour: 1, // Mardi
-    debut: 1, // 9h
-    duree: 2, // 2h
-    couleur: 'bg-purple-100 border-purple-300 text-purple-800'
-  },
-  {
-    id: '4',
-    classe: '3ème A',
-    matiere: 'Anglais',
-    professeur: 'Mme Lambert',
+    classe: 'TS1',
+    matiere: 'Physique-Chimie',
+    professeur: professeurConnecte.id,
     salle: 'S-103',
-    jour: 2, // Mercredi
-    debut: 0, // 8h
-    duree: 2, // 2h
-    couleur: 'bg-yellow-100 border-yellow-300 text-yellow-800'
-  },
-  {
-    id: '5',
-    classe: '3ème A',
-    matiere: 'SVT',
-    professeur: 'M. Roux',
-    salle: 'Labo-1',
-    jour: 3, // Jeudi
-    debut: 2, // 10h
-    duree: 2, // 2h
+    jour: 2,
+    debut: 0,
+    duree: 2,
     couleur: 'bg-red-100 border-red-300 text-red-800'
   },
   {
-    id: '6',
-    classe: '3ème A',
-    matiere: 'EPS',
-    professeur: 'M. Dupont',
-    salle: 'Gymnase',
-    jour: 4, // Vendredi
-    debut: 6, // 14h
-    duree: 3, // 3h
-    couleur: 'bg-orange-100 border-orange-300 text-orange-800'
+    id: '4',
+    classe: 'TS2',
+    matiere: 'Physique-Chimie',
+    professeur: professeurConnecte.id,
+    salle: 'S-104',
+    jour: 3,
+    debut: 2,
+    duree: 2,
+    couleur: 'bg-red-100 border-red-300 text-red-800'
+  },
+  {
+    id: '5',
+    classe: 'TS3',
+    matiere: 'Mathématiques',
+    professeur: professeurConnecte.id,
+    salle: 'S-105',
+    jour: 4,
+    debut: 0,
+    duree: 2,
+    couleur: 'bg-blue-100 border-blue-300 text-blue-800'
   }
 ];
 
@@ -112,7 +100,7 @@ const CoursItem = ({ cours }: { cours: Cours }) => {
       <div className="font-medium text-sm">{cours.matiere}</div>
       <div className="text-xs flex items-center gap-1">
         <User className="h-3 w-3" />
-        {cours.professeur}
+        {cours.classe}
       </div>
       <div className="text-xs mt-auto">{cours.salle}</div>
     </div>
@@ -120,11 +108,22 @@ const CoursItem = ({ cours }: { cours: Cours }) => {
 };
 
 const EmploiDuTempsProf = () => {
-  const [classeSelectionnee, setClasseSelectionnee] = useState('3ème A');
   const [semaine, setSemaine] = useState('Semaine du 10 au 14 juin 2024');
 
-  // Filtrer les cours pour la classe sélectionnée
-  const coursDeLaClasse = coursMockData.filter(cours => cours.classe === classeSelectionnee);
+  // Filtrer les cours pour ne garder que ceux du professeur connecté
+  const coursProfesseur = useMemo(() => {
+    return coursMockData.filter(cours => {
+      // Vérifier que le cours appartient au professeur
+      if (cours.professeur !== professeurConnecte.id) return false;
+      
+      // Vérifier que la classe est assignée au professeur
+      const classe = professeurConnecte.classes.find(c => c.id === cours.classe);
+      if (!classe) return false;
+      
+      // Vérifier que la matière est enseignée dans cette classe
+      return classe.matieres.includes(cours.matiere);
+    });
+  }, []);
 
   const handlePrevSemaine = () => {
     setSemaine('Semaine du 3 au 7 juin 2024');
@@ -134,61 +133,45 @@ const EmploiDuTempsProf = () => {
     setSemaine('Semaine du 17 au 21 juin 2024');
   };
 
+  const handleExport = (format: 'excel' | 'pdf') => {
+    // Logique d'export à implémenter
+    console.log(`Export ${format} de l'emploi du temps`);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <PageHeader
-          title="Emploi du temps"
-          description="Gestion et consultation des emplois du temps"
+          title={`Mon emploi du temps - ${professeurConnecte.prenom} ${professeurConnecte.nom}`}
+          description="Consultez votre emploi du temps de la semaine"
           actions={
             <div className="flex flex-wrap gap-2">
               <Button variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Actualiser
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => handleExport('excel')}>
                 <Download className="mr-2 h-4 w-4" />
-                Exporter
+                Excel
               </Button>
-              <Button>
-                Modifier
+              <Button variant="outline" onClick={() => handleExport('pdf')}>
+                <Download className="mr-2 h-4 w-4" />
+                PDF
               </Button>
             </div>
           }
         />
 
         <div className="space-y-4">
-          {/* Sélecteurs et navigation */}
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex flex-wrap gap-2 items-center">
-              <Select value={classeSelectionnee} onValueChange={setClasseSelectionnee}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sélectionner une classe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3ème A">3ème A</SelectItem>
-                  <SelectItem value="3ème B">3ème B</SelectItem>
-                  <SelectItem value="4ème A">4ème A</SelectItem>
-                  <SelectItem value="4ème B">4ème B</SelectItem>
-                </SelectContent>
-              </Select>
-              <Badge variant="outline" className="text-xs">
-                32 élèves
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                Prof principal: M. Martin
-              </Badge>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={handlePrevSemaine}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium">{semaine}</span>
-              <Button variant="outline" size="icon" onClick={handleNextSemaine}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+          {/* Navigation */}
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" size="icon" onClick={handlePrevSemaine}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-medium">{semaine}</span>
+            <Button variant="outline" size="icon" onClick={handleNextSemaine}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Calendrier emploi du temps */}
@@ -221,7 +204,7 @@ const EmploiDuTempsProf = () => {
                       ))}
                       
                       {/* Cours du jour */}
-                      {coursDeLaClasse
+                      {coursProfesseur
                         .filter(cours => cours.jour === jourIndex)
                         .map(cours => (
                           <CoursItem key={cours.id} cours={cours} />

@@ -1,154 +1,97 @@
+import type { Note } from '@/types/note';
+import { professeurConnecte } from '@/types/professeur';
 
-// Exemple de données pour les notes des élèves
-export const notesMockData = [
-  {
-    id: '1',
-    eleveId: '1',
-    eleveNom: 'Martin',
-    elevePrenom: 'Sophie',
-    classe: '3ème A',
-    matiere: 'Mathématiques',
-    note: 14.5,
-    coefficient: 2,
-    professeur: 'M. Dupont',
-    trimestre: 1,
-    dateEvaluation: '2023-10-15',
-    commentaire: 'Bon travail, continue ainsi',
-    type: 'Contrôle'
-  },
-  {
-    id: '2',
-    eleveId: '1',
-    eleveNom: 'Martin',
-    elevePrenom: 'Sophie',
-    classe: '3ème A',
-    matiere: 'Français',
-    note: 16,
-    coefficient: 2,
-    professeur: 'Mme Robert',
-    trimestre: 1,
-    dateEvaluation: '2023-10-10',
-    commentaire: 'Excellente analyse littéraire',
-    type: 'Dissertation'
-  },
-  {
-    id: '3',
-    eleveId: '2',
-    eleveNom: 'Dubois',
-    elevePrenom: 'Lucas',
-    classe: '6ème B',
-    matiere: 'Histoire-Géographie',
-    note: 12,
-    coefficient: 1,
-    professeur: 'M. Bernard',
-    trimestre: 1,
-    dateEvaluation: '2023-10-05',
-    commentaire: 'Des efforts à faire sur les dates',
-    type: 'Contrôle'
-  },
-  {
-    id: '4',
-    eleveId: '3',
-    eleveNom: 'Bernard',
-    elevePrenom: 'Emma',
-    classe: 'Terminale S',
-    matiere: 'Physique-Chimie',
-    note: 18,
-    coefficient: 3,
-    professeur: 'Mme Petit',
-    trimestre: 1,
-    dateEvaluation: '2023-09-28',
-    commentaire: 'Excellent travail, très bonne compréhension des concepts',
-    type: 'TP'
-  },
-  {
-    id: '5',
-    eleveId: '4',
-    eleveNom: 'Petit',
-    elevePrenom: 'Nathan',
-    classe: '4ème C',
-    matiere: 'Anglais',
-    note: 9.5,
-    coefficient: 1,
-    professeur: 'M. Jones',
-    trimestre: 1,
-    dateEvaluation: '2023-10-12',
-    commentaire: 'Attention aux temps des verbes',
-    type: 'Interrogation'
-  },
-  {
-    id: '6',
-    eleveId: '5',
-    eleveNom: 'Leroy',
-    elevePrenom: 'Jade',
-    classe: '1ère ES',
-    matiere: 'SES',
-    note: 15.5,
-    coefficient: 2,
-    professeur: 'Mme Martin',
-    trimestre: 1,
-    dateEvaluation: '2023-10-08',
-    commentaire: 'Bonne analyse des documents',
-    type: 'Dissertation'
-  },
-  {
-    id: '7',
-    eleveId: '6',
-    eleveNom: 'Moreau',
-    elevePrenom: 'Louis',
-    classe: 'CM2',
-    matiere: 'Mathématiques',
-    note: 16.5,
-    coefficient: 1,
-    professeur: 'Mme Durand',
-    trimestre: 1,
-    dateEvaluation: '2023-10-01',
-    commentaire: 'Excellent travail en géométrie',
-    type: 'Contrôle'
-  },
-  {
-    id: '8',
-    eleveId: '7',
-    eleveNom: 'Lambert',
-    elevePrenom: 'Chloé',
-    classe: '5ème A',
-    matiere: 'SVT',
-    note: 13,
-    coefficient: 1,
-    professeur: 'M. Lefevre',
-    trimestre: 1,
-    dateEvaluation: '2023-09-25',
-    commentaire: 'Bon travail sur la classification des espèces',
-    type: 'Exposé'
-  },
-  {
-    id: '9',
-    eleveId: '8',
-    eleveNom: 'Fournier',
-    elevePrenom: 'Gabriel',
-    classe: '2nde',
-    matiere: 'Chimie',
-    note: 11.5,
-    coefficient: 2,
-    professeur: 'Mme Leclerc',
-    trimestre: 1,
-    dateEvaluation: '2023-10-03',
-    commentaire: 'Des efforts à faire sur les équations chimiques',
-    type: 'Contrôle'
-  },
-  {
-    id: '10',
-    eleveId: '2',
-    eleveNom: 'Dubois',
-    elevePrenom: 'Lucas',
-    classe: '6ème B',
-    matiere: 'Français',
-    note: 14,
-    coefficient: 1,
-    professeur: 'Mme Roux',
-    trimestre: 1,
-    dateEvaluation: '2023-09-20',
-    commentaire: 'Bonne expression écrite',
-    type: 'Rédaction'
-  }
-];
+// Fonction utilitaire pour générer une date aléatoire dans un intervalle
+const randomDate = (start: Date, end: Date) => {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).toISOString().split('T')[0];
+};
+
+// Types d'évaluation possibles
+const typesEvaluation = ['Contrôle', 'DS', 'TP', 'Oral'];
+
+// Génération des notes pour chaque élève
+const generateNotes = (eleveId: string, eleveNom: string, elevePrenom: string, classe: string, matiere: string): Note[] => {
+  const notes: Note[] = [];
+  const trimestres = [1, 2, 3];
+  
+  // Générer 2 notes par trimestre
+  trimestres.forEach(trimestre => {
+    // Première note (Contrôle)
+    notes.push({
+      id: `${eleveId}-${matiere}-${trimestre}-1`,
+      eleveId,
+      eleveNom,
+      elevePrenom,
+      classe,
+      matiere,
+      note: Math.floor(Math.random() * 5) + 12, // Note entre 12 et 17
+      coefficient: 1,
+      professeur: professeurConnecte.id,
+      trimestre,
+      dateEvaluation: randomDate(new Date('2024-01-01'), new Date('2024-06-30')),
+      commentaire: "Bon travail, quelques erreurs de calcul",
+      type: 'Contrôle'
+    });
+
+    // Deuxième note (DS)
+    notes.push({
+      id: `${eleveId}-${matiere}-${trimestre}-2`,
+      eleveId,
+      eleveNom,
+      elevePrenom,
+      classe,
+      matiere,
+      note: Math.floor(Math.random() * 4) + 13, // Note entre 13 et 17
+      coefficient: 2,
+      professeur: professeurConnecte.id,
+      trimestre,
+      dateEvaluation: randomDate(new Date('2024-01-01'), new Date('2024-06-30')),
+      commentaire: "Très bonne copie, démonstration claire",
+      type: 'DS'
+    });
+  });
+
+  return notes;
+};
+
+// Liste des élèves par classe
+const elevesParClasse = {
+  "TS1": [
+    { id: "E1", nom: "Martin", prenom: "Marie" },
+    { id: "E2", nom: "Dubois", prenom: "Pierre" },
+    { id: "E3", nom: "Bernard", prenom: "Sophie" },
+    { id: "E4", nom: "Petit", prenom: "Lucas" },
+    { id: "E5", nom: "Robert", prenom: "Emma" }
+  ],
+  "TS2": [
+    { id: "E6", nom: "Richard", prenom: "Léo" },
+    { id: "E7", nom: "Durand", prenom: "Julie" },
+    { id: "E8", nom: "Moreau", prenom: "Thomas" },
+    { id: "E9", nom: "Simon", prenom: "Léa" },
+    { id: "E10", nom: "Laurent", prenom: "Hugo" }
+  ],
+  "TS3": [
+    { id: "E11", nom: "Michel", prenom: "Alice" },
+    { id: "E12", nom: "Leroy", prenom: "Nathan" },
+    { id: "E13", nom: "Roux", prenom: "Chloé" },
+    { id: "E14", nom: "David", prenom: "Raphaël" },
+    { id: "E15", nom: "Bertrand", prenom: "Inès" }
+  ]
+};
+
+// Génération des notes pour tous les élèves
+export const notesMockData: Note[] = [];
+
+Object.entries(elevesParClasse).forEach(([classe, eleves]) => {
+  eleves.forEach(eleve => {
+    // Pour TS1 et TS2, ajouter les notes de Mathématiques et Physique-Chimie
+    if (classe === "TS1" || classe === "TS2") {
+      notesMockData.push(...generateNotes(eleve.id, eleve.nom, eleve.prenom, classe, "Mathématiques"));
+      notesMockData.push(...generateNotes(eleve.id, eleve.nom, eleve.prenom, classe, "Physique-Chimie"));
+    }
+    // Pour TS3, ajouter uniquement les notes de Mathématiques
+    if (classe === "TS3") {
+      notesMockData.push(...generateNotes(eleve.id, eleve.nom, eleve.prenom, classe, "Mathématiques"));
+    }
+  });
+});

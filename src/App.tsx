@@ -8,7 +8,7 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import Eleves from "./pages/administration/Eleves";
 import Professeurs from "./pages/administration/Professeurs";
-import { EmploiDuTemps as EmploiDuTempsAdmin } from "./pages/administration/EmploiDuTemps";
+import EmploiDuTemps, { EmploiDuTemps as EmploiDuTempsAdmin } from "./pages/administration/EmploiDuTemps";
 import Notes from "./pages/administration/Notes";
 import Bulletins from "./pages/administration/Bulletins";
 import EmploiDuTempsProf from "./pages/Professeur/EmploiDuTempsProf";
@@ -21,11 +21,15 @@ import DashboardEleve from "./pages/eleves/DashboardEleve";
 
 // Routes pour les élèves
 import Syllabus from "./pages/eleves/Syllabus";
-import NotesEleve from "./pages/eleves/Notes";
+import NotesProf from "./pages/Professeur/NotesProf";
+import DashboardAdmin from "./pages/administration/DashboardAdmin";
+import DashboardProf from "./pages/Professeur/DashboardProf";
+import DashboardEleves from "./pages/Eleve/DashboardEleve";
+import DashboardParents from "./pages/Parent/DashboardParent";
+import NotesEleve from "./pages/eleves/NotesEleve";
 import Bulletin from "./pages/eleves/Bulletin";
-import EmploiDuTemps from "./pages/eleves/Emploi du temps";
-
-// Routes pour les professeurs
+import EmploiDuTemp from "./pages/eleves/EmploiDuTemp";
+// Routes pour les professeurs  
 // Ces composants seront créés à la demande
 
 const queryClient = new QueryClient();
@@ -40,24 +44,31 @@ const App = () => (
           {/* Page d'accueil et de connexion */}
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          
+
+
+
+
+
           {/* Routes Administration */}
           <Route path="/administration/eleves" element={<Eleves />} />
           <Route path="/administration/professeurs" element={<Professeurs />} />
           <Route path="/administration/emploi-du-temps" element={<EmploiDuTempsAdmin />} />
           <Route path="/administration/notes" element={<Notes />} />
           <Route path="/administration/bulletins" element={<Bulletins />} />
-          
+          <Route path="/administration/dashboard" element={<DashboardAdmin />} />
+
           {/* Routes Professeurs */}
-          <Route path="/professeurs/classes" element={<Professeurs />} />
-          <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTemps />} />
-          <Route path="/professeurs/notes" element={<Eleves />} />
+          <Route path="/professeurs/classes" element={<ElevesProf />} />
+          <Route path="/professeurs/emploi-du-temps" element={<EmploiDuTempsProf />} />
+          <Route path="/professeurs/notes" element={<NotesProf />} />
           <Route path="/professeurs/syllabus" element={<SyllabusProf />} />
-          
+          <Route path="/professeurs/dashboard" element={<DashboardProf />} />
+
           {/* Routes Élèves */}
           <Route path="/eleves/dashboard" element={<DashboardEleve />} />
           <Route path="/eleves/syllabus" element={<Syllabus />} />
-          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
+          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
           <Route path="/eleves/notes" element={<NotesEleve />} />
           <Route path="/eleves/bulletin" element={<Bulletin />} />
           <Route path="/eleves/notifications" element={<Notifications />} />
@@ -66,7 +77,8 @@ const App = () => (
           
           {/* Routes Parents */}
           <Route path="/parents" element={<Dashboard />} />
-          
+          <Route path="/parents/dashboard" element={<DashboardParents />} />
+                    
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

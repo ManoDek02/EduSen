@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -9,7 +8,7 @@ import DataTable from '@/components/tables/DataTable';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Printer, Eye, Pencil, Trash2, FilePlus, Download } from 'lucide-react';
+import { FileText, Printer, Eye, Pencil, Trash2, FilePlus, Download, Users, Filter, X } from 'lucide-react';
 import BulletinDetailDialog from '@/components/bulletins/BulletinDetailDialog';
 import NewBulletinDialog from '@/components/bulletins/NewBulletinDialog';
 import FilterBulletinsDialog from '@/components/bulletins/FilterBulletinsDialog';
@@ -24,6 +23,11 @@ const Bulletins = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [bulletinToDelete, setBulletinToDelete] = useState<Bulletin | null>(null);
+  const [activeFilters, setActiveFilters] = useState<{
+    trimestre?: string;
+    classe?: string;
+    status?: string[];
+  }>({});
 
   const handleAddBulletin = (newBulletin: Bulletin) => {
     const updatedBulletins = [...bulletins, newBulletin];
@@ -72,7 +76,21 @@ const Bulletins = () => {
   };
 
   const handleApplyFilters = (filters) => {
+    setActiveFilters(filters);
     applyFiltersAndSearch(bulletins, searchTerm, filters);
+  };
+
+  const handleResetFilters = () => {
+    setActiveFilters({});
+    applyFiltersAndSearch(bulletins, searchTerm, {});
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (activeFilters.trimestre) count++;
+    if (activeFilters.classe) count++;
+    if (activeFilters.status?.length) count++;
+    return count;
   };
 
   const applyFiltersAndSearch = (data: Bulletin[], term: string, filters: any) => {
@@ -123,83 +141,104 @@ const Bulletins = () => {
       key: 'eleveNom',
       header: 'Élève',
       cell: (row) => (
-        <div>
-          <div className="font-medium">{row.eleveNom} {row.elevePrenom}</div>
-          <div className="text-xs text-muted-foreground">{row.classe}</div>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col">
+            <div className="font-medium">{row.eleveNom} {row.elevePrenom}</div>
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              {row.classe}
+            </div>
+          </div>
         </div>
       )
     },
     {
       key: 'trimestre',
-      header: 'Trimestre',
-      cell: (row) => `Trimestre ${row.trimestre} - ${row.annee}`
+      header: 'Période',
+      cell: (row) => (
+        <div className="flex flex-col">
+          <Badge variant="outline" className="w-fit">
+            Trimestre {row.trimestre}
+          </Badge>
+          <div className="text-xs text-muted-foreground">{row.annee}</div>
+        </div>
+      )
     },
     {
       key: 'moyenneGenerale',
       header: 'Moyenne',
       cell: (row) => (
-        <span className={`font-medium ${
-          row.moyenneGenerale >= 14 ? 'text-green-600' : 
-          row.moyenneGenerale >= 10 ? 'text-blue-600' : 
-          'text-red-600'
-        }`}>
-          {row.moyenneGenerale.toFixed(1)}
-        </span>
+        <div className="flex items-center gap-2">
+          <Badge variant={
+            row.moyenneGenerale >= 14 ? "default" :
+            row.moyenneGenerale >= 10 ? "secondary" : "destructive"
+          }>
+            {row.moyenneGenerale.toFixed(1)}
+          </Badge>
+          <div className="text-xs text-muted-foreground">/20</div>
+        </div>
       )
     },
     {
       key: 'moyenneClasse',
       header: 'Moy. Classe',
-      cell: (row) => row.moyenneClasse.toFixed(1)
+      cell: (row) => (
+        <div className="flex items-center gap-2">
+          <Badge variant="outline">
+            {row.moyenneClasse.toFixed(1)}
+          </Badge>
+          <div className="text-xs text-muted-foreground">/20</div>
+        </div>
+      )
     },
     {
       key: 'status',
       header: 'Statut',
-      cell: (row) => getStatusBadge(row.status)
+      cell: (row) => (
+        <div className="flex items-center gap-2">
+          {getStatusBadge(row.status)}
+          {row.status === 'publié' && (
+            <Badge variant="outline" className="text-xs">
+              {formatDate(row.datePublication)}
+            </Badge>
+          )}
+        </div>
+      )
     },
     {
       key: 'actions',
       header: 'Actions',
       cell: (row) => (
-        <div className="flex space-x-2">
+        <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              handleViewBulletin(row); 
-            }}
+            onClick={() => handleViewBulletin(row)}
+            className="hover:bg-blue-50 hover:text-blue-600"
           >
             <Eye className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              handlePrintBulletin(row); 
-            }}
+            onClick={() => handlePrintBulletin(row)}
+            className="hover:bg-green-50 hover:text-green-600"
           >
             <Printer className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              handleEditBulletin(row); 
-            }}
+            onClick={() => handleEditBulletin(row)}
+            className="hover:bg-yellow-50 hover:text-yellow-600"
           >
             <Pencil className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-destructive hover:text-destructive" 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              handleDeleteBulletin(row); 
-            }}
+            onClick={() => handleDeleteBulletin(row)}
+            className="hover:bg-red-50 hover:text-red-600"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -232,7 +271,34 @@ const Bulletins = () => {
           searchTerm={searchTerm}
           onSearch={handleSearch}
           additionalFilters={
-            <FilterBulletinsDialog onApplyFilters={handleApplyFilters} />
+            <div className="flex items-center gap-2">
+              {getActiveFiltersCount() > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetFilters}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Réinitialiser les filtres
+                </Button>
+              )}
+              <FilterBulletinsDialog 
+                onApplyFilters={handleApplyFilters}
+                activeFilters={activeFilters}
+                trigger={
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    Filtres
+                    {getActiveFiltersCount() > 0 && (
+                      <Badge variant="secondary" className="ml-1">
+                        {getActiveFiltersCount()}
+                      </Badge>
+                    )}
+                  </Button>
+                }
+              />
+            </div>
           }
         />
       </div>

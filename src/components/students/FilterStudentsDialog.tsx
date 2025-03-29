@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,29 +5,39 @@ import { Filter } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const classes = [
-  { id: '1', name: '6ème A' },
-  { id: '2', name: '6ème B' },
-  { id: '3', name: '5ème A' },
-  { id: '4', name: '5ème B' },
-  { id: '5', name: '4ème A' },
-  { id: '6', name: '4ème B' },
-  { id: '7', name: '3ème A' },
-  { id: '8', name: '3ème B' },
-  { id: '9', name: '2nde' },
-  { id: '10', name: '1ère ES' },
-  { id: '11', name: '1ère S' },
-  { id: '12', name: 'Terminale ES' },
-  { id: '13', name: 'Terminale S' },
+  { id: '1', name: '6ème A', niveau: 'Collège' },
+  { id: '2', name: '6ème B', niveau: 'Collège' },
+  { id: '3', name: '5ème A', niveau: 'Collège' },
+  { id: '4', name: '5ème B', niveau: 'Collège' },
+  { id: '5', name: '4ème A', niveau: 'Collège' },
+  { id: '6', name: '4ème B', niveau: 'Collège' },
+  { id: '7', name: '3ème A', niveau: 'Collège' },
+  { id: '8', name: '3ème B', niveau: 'Collège' },
+  { id: '9', name: '2nde', niveau: 'Lycée' },
+  { id: '10', name: '1ère ES', niveau: 'Lycée' },
+  { id: '11', name: '1ère S', niveau: 'Lycée' },
+  { id: '12', name: 'Terminale ES', niveau: 'Lycée' },
+  { id: '13', name: 'Terminale S', niveau: 'Lycée' },
 ];
 
-const FilterStudentsDialog = ({ onApplyFilters }) => {
+const niveaux = [
+  { id: '1', name: 'Collège', classes: ['6ème', '5ème', '4ème', '3ème'] },
+  { id: '2', name: 'Lycée', classes: ['2nde', '1ère', 'Terminale'] }
+];
+
+interface FilterStudentsDialogProps {
+  onApplyFilters: (filters: any) => void;
+}
+
+const FilterStudentsDialog: React.FC<FilterStudentsDialogProps> = ({ onApplyFilters }) => {
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState({
     classe: '',
-    status: [],
-    niveaux: []
+    niveaux: [],
+    statut: []
   });
 
   const handleApplyFilters = () => {
@@ -39,28 +48,14 @@ const FilterStudentsDialog = ({ onApplyFilters }) => {
   const handleResetFilters = () => {
     setFilters({
       classe: '',
-      status: [],
-      niveaux: []
+      niveaux: [],
+      statut: []
     });
     onApplyFilters({});
     setOpen(false);
   };
 
-  const handleStatusChange = (value) => {
-    if (filters.status.includes(value)) {
-      setFilters({
-        ...filters,
-        status: filters.status.filter(s => s !== value)
-      });
-    } else {
-      setFilters({
-        ...filters,
-        status: [...filters.status, value]
-      });
-    }
-  };
-
-  const handleNiveauChange = (value) => {
+  const handleNiveauChange = (value: string) => {
     if (filters.niveaux.includes(value)) {
       setFilters({
         ...filters,
@@ -74,20 +69,28 @@ const FilterStudentsDialog = ({ onApplyFilters }) => {
     }
   };
 
-  // Grouper les classes par niveau
-  const niveaux = [
-    { id: '1', name: 'Collège', classes: ['6ème', '5ème', '4ème', '3ème'] },
-    { id: '2', name: 'Lycée', classes: ['2nde', '1ère', 'Terminale'] }
-  ];
+  const handleStatutChange = (value: string) => {
+    if (filters.statut.includes(value)) {
+      setFilters({
+        ...filters,
+        statut: filters.statut.filter(s => s !== value)
+      });
+    } else {
+      setFilters({
+        ...filters,
+        statut: [...filters.statut, value]
+      });
+    }
+  };
 
-  const hasActiveFilters = filters.classe || filters.status.length > 0 || filters.niveaux.length > 0;
+  const hasActiveFilters = filters.classe || filters.niveaux.length > 0 || filters.statut.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className={hasActiveFilters ? "border-primary text-primary" : ""}>
           <Filter className="mr-2 h-4 w-4" />
-          {hasActiveFilters ? `Filtres (${filters.status.length + filters.niveaux.length + (filters.classe ? 1 : 0)})` : "Filtres"}
+          {hasActiveFilters ? `Filtres (${filters.niveaux.length + (filters.classe ? 1 : 0) + filters.statut.length})` : "Filtres"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -95,86 +98,98 @@ const FilterStudentsDialog = ({ onApplyFilters }) => {
           <DialogTitle>Filtrer les élèves</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 pt-4">
-          <div className="space-y-2">
-            <Label>Classe spécifique</Label>
-            <Select 
-              value={filters.classe} 
-              onValueChange={(value) => setFilters({...filters, classe: value})}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Toutes les classes" />
-              </SelectTrigger>
-              <SelectContent>
-                {classes.map(classe => (
-                  <SelectItem key={classe.id} value={classe.name}>
-                    {classe.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <Tabs defaultValue="classe" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="classe">Classe</TabsTrigger>
+            <TabsTrigger value="niveau">Niveau</TabsTrigger>
+            <TabsTrigger value="statut">Statut</TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2">
-            <Label>Niveau</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {niveaux.map(niveau => (
-                <div key={niveau.id} className="flex items-center space-x-2">
+          <TabsContent value="classe" className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Classe spécifique</Label>
+              <Select 
+                value={filters.classe} 
+                onValueChange={(value) => setFilters({...filters, classe: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Toutes les classes" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.map(classe => (
+                    <SelectItem key={classe.id} value={classe.name}>
+                      {classe.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="niveau" className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Niveau</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {niveaux.map(niveau => (
+                  <div key={niveau.id} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`niveau-${niveau.id}`}
+                      checked={filters.niveaux.includes(niveau.id)}
+                      onCheckedChange={() => handleNiveauChange(niveau.id)}
+                    />
+                    <label
+                      htmlFor={`niveau-${niveau.id}`}
+                      className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {niveau.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="statut" className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Statut</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center space-x-2">
                   <Checkbox 
-                    id={`niveau-${niveau.id}`}
-                    checked={filters.niveaux.includes(niveau.id)}
-                    onCheckedChange={() => handleNiveauChange(niveau.id)}
+                    id="actif"
+                    checked={filters.statut.includes('Actif')}
+                    onCheckedChange={() => handleStatutChange('Actif')}
                   />
                   <label
-                    htmlFor={`niveau-${niveau.id}`}
+                    htmlFor="actif"
                     className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {niveau.name}
+                    Actif
                   </label>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Statut</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="status-actif"
-                  checked={filters.status.includes('Actif')}
-                  onCheckedChange={() => handleStatusChange('Actif')}
-                />
-                <label
-                  htmlFor="status-actif"
-                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Actif
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="status-inactif"
-                  checked={filters.status.includes('Inactif')}
-                  onCheckedChange={() => handleStatusChange('Inactif')}
-                />
-                <label
-                  htmlFor="status-inactif"
-                  className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Inactif
-                </label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="inactif"
+                    checked={filters.statut.includes('Inactif')}
+                    onCheckedChange={() => handleStatutChange('Inactif')}
+                  />
+                  <label
+                    htmlFor="inactif"
+                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Inactif
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={handleResetFilters}>
             Réinitialiser
           </Button>
           <Button onClick={handleApplyFilters}>
-            Appliquer les filtres
+            Appliquer
           </Button>
         </DialogFooter>
       </DialogContent>

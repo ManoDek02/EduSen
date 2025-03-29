@@ -3,17 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navigation from './Navigation';
 import { cn } from '@/lib/utils';
+import { User } from '@/types/navigation';
 
-type User = {
-  matricule: string;
-  role: string;
-  name: string;
-} | null;
-
-type MainLayoutProps = {
+interface MainLayoutProps {
   children: React.ReactNode;
   title?: string;
-};
+}
 
 const MainLayout = ({ children, title }: MainLayoutProps) => {
   const isMobile = useIsMobile();

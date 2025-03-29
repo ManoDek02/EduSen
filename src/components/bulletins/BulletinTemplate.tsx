@@ -1,12 +1,12 @@
-
 import React from 'react';
 import { formatDate } from '@/lib/utils';
 import { Bulletin, BulletinMatiere } from '@/data/bulletinsMockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { School } from 'lucide-react';
+import { School, Users, Calendar, Award, GraduationCap, FileText } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 interface BulletinTemplateProps {
   bulletin: Bulletin;
@@ -34,15 +34,23 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
           </div>
         </div>
         <div className="text-right">
-          <p className="font-medium">Trimestre {bulletin.trimestre}</p>
-          <p className="text-muted-foreground">{printMode && bulletin.datePrinted ? `Imprimé le ${formatDate(bulletin.datePrinted)}` : ""}</p>
+          <Badge variant="outline" className="mb-1">
+            <Calendar className="mr-1 h-4 w-4" />
+            Trimestre {bulletin.trimestre}
+          </Badge>
+          <p className="text-sm text-muted-foreground">
+            {printMode && bulletin.datePrinted ? `Imprimé le ${formatDate(bulletin.datePrinted)}` : ""}
+          </p>
         </div>
       </div>
 
       {/* Informations de l'élève */}
       <Card className="mb-6">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Informations de l'élève</CardTitle>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Informations de l'élève
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
@@ -52,7 +60,9 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Classe</p>
-              <p className="font-medium">{bulletin.classe}</p>
+              <Badge variant="outline" className="mt-1">
+                {bulletin.classe}
+              </Badge>
             </div>
           </div>
         </CardContent>
@@ -60,7 +70,10 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
 
       {/* Tableau des matières */}
       <div className="mb-6">
-        <h2 className="text-lg font-medium mb-3">Résultats par matière</h2>
+        <h2 className="text-lg font-medium mb-3 flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Résultats par matière
+        </h2>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -77,17 +90,18 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
                 <TableRow key={index}>
                   <TableCell className="font-medium">{matiere.matiere}</TableCell>
                   <TableCell className="text-center">
-                    <span 
-                      className={`font-medium ${
-                        matiere.moyenne >= 14 ? 'text-green-600' : 
-                        matiere.moyenne >= 10 ? 'text-blue-600' : 
-                        'text-red-600'
-                      }`}
-                    >
+                    <Badge variant={
+                      matiere.moyenne >= 14 ? "default" :
+                      matiere.moyenne >= 10 ? "secondary" : "destructive"
+                    }>
                       {matiere.moyenne.toFixed(1)}
-                    </span>
+                    </Badge>
                   </TableCell>
-                  <TableCell className="text-center text-muted-foreground">{matiere.moyenneClasse.toFixed(1)}</TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant="outline">
+                      {matiere.moyenneClasse.toFixed(1)}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{matiere.professeur}</TableCell>
                   <TableCell className="max-w-[300px]">{matiere.appreciation}</TableCell>
                 </TableRow>
@@ -101,27 +115,32 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Moyenne générale</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Moyenne générale
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p 
-              className={`text-2xl font-bold ${
-                bulletin.moyenneGenerale >= 14 ? 'text-green-600' : 
-                bulletin.moyenneGenerale >= 10 ? 'text-blue-600' : 
-                'text-red-600'
-              }`}
-            >
-              {bulletin.moyenneGenerale.toFixed(1)}
-            </p>
+            <Badge variant={
+              bulletin.moyenneGenerale >= 14 ? "default" :
+              bulletin.moyenneGenerale >= 10 ? "secondary" : "destructive"
+            } className="text-lg">
+              {bulletin.moyenneGenerale.toFixed(1)} /20
+            </Badge>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Moyenne de la classe</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <GraduationCap className="h-4 w-4" />
+              Moyenne de la classe
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-muted-foreground">{bulletin.moyenneClasse.toFixed(1)}</p>
+            <Badge variant="outline" className="text-lg">
+              {bulletin.moyenneClasse.toFixed(1)} /20
+            </Badge>
           </CardContent>
         </Card>
         
@@ -130,17 +149,22 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
             <CardTitle className="text-sm">Rang dans la classe</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{'N/A'}</p>
+            <Badge variant="outline" className="text-lg">
+              N/A
+            </Badge>
           </CardContent>
         </Card>
       </div>
 
       {/* Appréciation générale */}
       <div className="mb-6">
-        <h2 className="text-lg font-medium mb-3">Appréciation générale</h2>
+        <h2 className="text-lg font-medium mb-3 flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          Appréciation générale
+        </h2>
         <Card>
           <CardContent className="p-4">
-            <p>{bulletin.appreciationGenerale}</p>
+            <p className="text-muted-foreground">{bulletin.appreciationGenerale}</p>
           </CardContent>
         </Card>
       </div>

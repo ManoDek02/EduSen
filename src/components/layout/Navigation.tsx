@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
+import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
-import { NavItem } from "./NavItem";
+import { NavItem as NavItemComponent } from "./NavItem";
 import { UserProfile } from "./UserProfile";
 import { User } from "@/types/user";
 import { toast } from 'sonner';
@@ -34,7 +37,7 @@ const Navigation = () => {
   };
 
   // Filtrer les éléments de navigation en fonction du rôle de l'utilisateur
-  const getNavItems = () => {
+  const getNavItems = (): NavItem[] => {
     if (!user) return [];
 
     switch (user.role) {
@@ -47,6 +50,7 @@ const Navigation = () => {
           },
           {
             to: "/administration",
+            icon: School,
             icon: School,
             label: "Administration",
             subItems: [
@@ -68,11 +72,13 @@ const Navigation = () => {
           {
             to: "/professeurs",
             icon: UserCircle,
+            icon: UserCircle,
             label: "Professeurs",
             subItems: [
-              { to: "/professeurs/classes", label: "Liste des classes" },
-              { to: "/professeurs/emploi-du-temps", label: "Emploi du temps" },
-              { to: "/professeurs/notes", label: "Gestion des notes" }
+              { to: "/professeurs/classes", label: "Liste des éleves" },
+              { to: "/professeurs/emploi-du-temps", label: "Mon emploi du temps" },
+              { to: "/professeurs/notes", label: "Gestion des notes" },
+              { to: "/professeurs/syllabus", label: "Syllabus" },
             ]
           }
         ];
@@ -81,10 +87,13 @@ const Navigation = () => {
           {
             to: "/eleves/dashboard",
             icon: LayoutDashboard,
+            to: "/eleves/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/eleves",
+            icon: GraduationCap,
             icon: GraduationCap,
             label: "Élèves",
             subItems: [
@@ -107,6 +116,7 @@ const Navigation = () => {
           },
           {
             to: "/parents",
+            icon: Users,
             icon: Users,
             label: "Parents"
           }
@@ -159,7 +169,7 @@ const Navigation = () => {
           <div className="flex-1 overflow-y-auto p-4">
             <nav className="space-y-1">
               {navItems.map((item) => (
-                <NavItem
+                <NavItemComponent
                   key={item.to}
                   to={item.to}
                   icon={item.icon}

@@ -10,6 +10,7 @@ import { Filter } from "lucide-react";
 interface NoteFilters {
   trimestre?: number;
   matiere?: string;
+  classe?: string;
   typesEvaluation?: string[];
   noteRange?: {
     min?: number;
@@ -32,6 +33,16 @@ const MATIERES = [
   "Allemand"
 ];
 
+const CLASSES = [
+  "6ème A", "6ème B",
+  "5ème A", "5ème B",
+  "4ème A", "4ème B",
+  "3ème A", "3ème B",
+  "2nde",
+  "1ère ES", "1ère S",
+  "Terminale ES", "Terminale S"
+];
+
 const TYPES_EVALUATION = [
   "Contrôle",
   "Devoir maison",
@@ -45,6 +56,7 @@ export const FilterNotesDialog = ({ onApplyFilters }: FilterNotesDialogProps) =>
   const [filters, setFilters] = useState<NoteFilters>({
     trimestre: undefined,
     matiere: undefined,
+    classe: undefined,
     typesEvaluation: [],
     noteRange: {
       min: undefined,
@@ -61,6 +73,7 @@ export const FilterNotesDialog = ({ onApplyFilters }: FilterNotesDialogProps) =>
     setFilters({
       trimestre: undefined,
       matiere: undefined,
+      classe: undefined,
       typesEvaluation: [],
       noteRange: {
         min: undefined,
@@ -82,6 +95,25 @@ export const FilterNotesDialog = ({ onApplyFilters }: FilterNotesDialogProps) =>
             <DialogTitle>Filtrer les notes</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Classe</Label>
+              <Select
+                value={filters.classe}
+                onValueChange={(value) => setFilters({ ...filters, classe: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une classe" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CLASSES.map((classe) => (
+                    <SelectItem key={classe} value={classe}>
+                      {classe}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label>Trimestre</Label>
               <Select
