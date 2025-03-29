@@ -81,7 +81,7 @@ const emploiDuTempsData = {
   }
 };
 
-const EmploiDuTemps = () => {
+const EmploiDuTemp = () => {
   const [selectedWeek, setSelectedWeek] = useState("Semaine 1");
   const [data, setData] = useState(emploiDuTempsData);
 
@@ -219,4 +219,4 @@ const EmploiDuTemps = () => {
   );
 };
 
-export default EmploiDuTemps;
+export default EmploiDuTemp;

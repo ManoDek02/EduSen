@@ -64,6 +64,7 @@ const App = () => (
           {/* Routes Élèves */}
           <Route path="/eleves/syllabus" element={<Syllabus />} />
           <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
+          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
           <Route path="/eleves/notes" element={<NotesEleve />} />
           <Route path="/eleves/bulletin" element={<Bulletin />} />
           <Route path="/eleves/contact-professeurs" element={<Professeurs />} />
