@@ -68,7 +68,7 @@ const Index = () => {
             navigate("/eleves/syllabus");
             break;
           case "parent":
-            navigate("/parents");
+            navigate("/parents/dashboard");
             break;
           default:
             navigate("/");

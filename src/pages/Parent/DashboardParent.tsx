@@ -25,7 +25,7 @@ const DashboardParent = () => {
         <Button 
           variant="ghost" 
           size="icon"
-          onClick={() => navigate('/parents')}
+          onClick={() => navigate('/')}
           className="hover:bg-slate-100"
         >
           <ArrowLeft className="h-6 w-6 text-[#0046AD]" />

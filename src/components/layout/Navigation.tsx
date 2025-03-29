@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
 import { NavItem as NavItemComponent } from "./NavItem";
 import { UserProfile } from "./UserProfile";
-import { User } from "@/types/user";
+import { User } from "@/types/navigation";
 import { toast } from 'sonner';
+import { NavItem } from '@/types/navigation';
 
 const Navigation = () => {
   const location = useLocation();
@@ -44,13 +42,12 @@ const Navigation = () => {
       case 'admin':
         return [
           {
-            to: "/dashboard",
+            to: "/administration/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/administration",
-            icon: School,
             icon: School,
             label: "Administration",
             subItems: [
@@ -65,13 +62,12 @@ const Navigation = () => {
       case 'professeur':
         return [
           {
-            to: "/dashboard",
+            to: "/professeurs/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/professeurs",
-            icon: UserCircle,
             icon: UserCircle,
             label: "Professeurs",
             subItems: [
@@ -87,13 +83,10 @@ const Navigation = () => {
           {
             to: "/eleves/dashboard",
             icon: LayoutDashboard,
-            to: "/eleves/dashboard",
-            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/eleves",
-            icon: GraduationCap,
             icon: GraduationCap,
             label: "Élèves",
             subItems: [
@@ -110,15 +103,9 @@ const Navigation = () => {
       case 'parent':
         return [
           {
-            to: "/dashboard",
+            to: "/parents/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
-          },
-          {
-            to: "/parents",
-            icon: Users,
-            icon: Users,
-            label: "Parents"
           }
         ];
       default:
