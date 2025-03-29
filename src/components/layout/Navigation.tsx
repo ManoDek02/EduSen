@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { School, Menu, X, LayoutDashboard, Users, UserCircle, GraduationCap } from "lucide-react";
+import { School, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
 import { NavItem } from "./NavItem";
 import { UserProfile } from "./UserProfile";
-import { User } from '@/types/user';
-import { toast } from 'sonner';
 
 const Navigation = () => {
   const location = useLocation();
@@ -33,15 +31,15 @@ const Navigation = () => {
   };
 
   // Filtrer les éléments de navigation en fonction du rôle de l'utilisateur
-  const getNavItems = () => {
+  const getNavItems = (): NavItem[] => {
     if (!user) return [];
 
     switch (user.role) {
       case 'admin':
         return [
           {
-            to: "/administration/dashboard",
-            icon: LayoutDashboard,
+            to: "/dashboard",
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
@@ -60,8 +58,8 @@ const Navigation = () => {
       case 'professeur':
         return [
           {
-            to: "/professeurs/dashboard",
-            icon: LayoutDashboard,
+            to: "/dashboard",
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
@@ -79,8 +77,8 @@ const Navigation = () => {
       case 'eleve':
         return [
           {
-            to: "/eleves/dashboard",
-            icon: LayoutDashboard,
+            to: "/dashboard",
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
@@ -100,8 +98,8 @@ const Navigation = () => {
       case 'parent':
         return [
           {
-            to: "/parents/dashboard",
-            icon: LayoutDashboard,
+            to: "/dashboard",
+            icon: <LayoutDashboard size={20} />,
             label: "Tableau de bord"
           },
           {
