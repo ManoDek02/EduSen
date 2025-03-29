@@ -159,18 +159,18 @@ const EmploiDuTemps = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-green-100">
-                    <TableHead className="text-lg font-bold text-black">
+                  <TableRow className="bg-[#0046AD]">
+                    <TableHead className="text-lg font-bold text-white">
                       <div className="flex items-center gap-2">
                         <Clock className="h-5 w-5" />
                         <span>Horaires</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-lg font-bold text-black">Lundi</TableHead>
-                    <TableHead className="text-lg font-bold text-black">Mardi</TableHead>
-                    <TableHead className="text-lg font-bold text-black">Mercredi</TableHead>
-                    <TableHead className="text-lg font-bold text-black">Jeudi</TableHead>
-                    <TableHead className="text-lg font-bold text-black">Vendredi</TableHead>
+                    <TableHead className="text-lg font-bold text-white">Lundi</TableHead>
+                    <TableHead className="text-lg font-bold text-white">Mardi</TableHead>
+                    <TableHead className="text-lg font-bold text-white">Mercredi</TableHead>
+                    <TableHead className="text-lg font-bold text-white">Jeudi</TableHead>
+                    <TableHead className="text-lg font-bold text-white">Vendredi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -183,14 +183,14 @@ const EmploiDuTemps = () => {
                           <TableCell key={jour} className="p-2">
                             {cours ? (
                               cours.type === "pause" ? (
-                                <div className="h-20 flex items-center justify-center bg-amber-50 rounded-lg">
-                                  <Coffee className="h-8 w-8 text-amber-600" />
+                                <div className="h-20 flex items-center justify-center bg-gray-50 rounded-lg">
+                                  <Coffee className="h-4 w-4 text-gray-400" />
                                 </div>
                               ) : (
-                                <div className={`p-2 rounded-lg ${getMatiereColor(cours.matiere)}`}>
-                                  <div className="font-semibold">{cours.matiere}</div>
-                                  <div className="text-sm">{cours.professeur}</div>
-                                  <div className="text-xs opacity-75">{cours.salle}</div>
+                                <div className="p-2 rounded-lg bg-gray-50 border border-gray-200">
+                                  <div className="font-semibold text-gray-800">{cours.matiere}</div>
+                                  <div className="text-sm text-gray-600">{cours.professeur}</div>
+                                  <div className="text-xs text-gray-500">{cours.salle}</div>
                                 </div>
                               )
                             ) : (

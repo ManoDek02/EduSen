@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navigation from './Navigation';
 import { cn } from '@/lib/utils';
@@ -19,22 +18,24 @@ type MainLayoutProps = {
 const MainLayout = ({ children, title }: MainLayoutProps) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User>(null);
 
   useEffect(() => {
-    // Récupérer l'utilisateur connecté depuis localStorage
     const storedUser = localStorage.getItem('currentUser');
-    
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-    } else {
-      // Rediriger vers la page de connexion si aucun utilisateur n'est connecté
+    } else if (location.pathname !== '/') {
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, location]);
+
+  if (location.pathname === '/') {
+    return children;
+  }
 
   if (!user) {
-    return null; // Ou un composant de chargement
+    return null;
   }
 
   return (

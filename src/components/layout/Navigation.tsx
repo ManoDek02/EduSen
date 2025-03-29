@@ -1,15 +1,19 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { School, Menu, X } from "lucide-react";
+import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
 import { NavItem } from "./NavItem";
 import { UserProfile } from "./UserProfile";
+import { User } from "@/types/user";
+import { toast } from 'sonner';
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const navigation = useNavigation();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -38,12 +42,12 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/administration",
-            icon: <School size={20} />,
+            icon: School,
             label: "Administration",
             subItems: [
               { to: "/administration/notes", label: "Gestion des notes" },
@@ -58,12 +62,12 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/professeurs",
-            icon: <UserCircle size={20} />,
+            icon: UserCircle,
             label: "Professeurs",
             subItems: [
               { to: "/professeurs/classes", label: "Liste des classes" },
@@ -75,19 +79,20 @@ const Navigation = () => {
       case 'eleve':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/eleves/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/eleves",
-            icon: <GraduationCap size={20} />,
+            icon: GraduationCap,
             label: "Élèves",
             subItems: [
               { to: "/eleves/syllabus", label: "Syllabus" },
               { to: "/eleves/emploi-du-temps", label: "Emploi du temps" },
               { to: "/eleves/notes", label: "Notes" },
               { to: "/eleves/bulletin", label: "Bulletin" },
+              { to: "/eleves/notifications", label: "Notifications" },
               { to: "/eleves/contact-professeurs", label: "Contact professeurs" },
               { to: "/eleves/baki", label: "Baki (Anciens sujets)" }
             ]
@@ -97,12 +102,12 @@ const Navigation = () => {
         return [
           {
             to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/parents",
-            icon: <Users size={20} />,
+            icon: Users,
             label: "Parents"
           }
         ];
