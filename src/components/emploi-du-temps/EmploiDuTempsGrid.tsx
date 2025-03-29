@@ -44,13 +44,6 @@ export const EmploiDuTempsGrid = ({ cours, onEdit, onDelete, onViewDetails }: Em
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
-        <Badge
-          variant={!selectedClasse ? "default" : "outline"}
-          className="cursor-pointer"
-          onClick={() => setSelectedClasse("")}
-        >
-          Toutes les classes
-        </Badge>
         {classes.map((classe) => (
           <Badge
             key={classe}

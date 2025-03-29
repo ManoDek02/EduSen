@@ -59,7 +59,7 @@ const notesData = {
   }
 };
 
-const Notes = () => {
+const NotesEleve = () => {
   const [selectedYear, setSelectedYear] = useState("2023-2024");
   const navigate = useNavigate();
 
@@ -243,4 +243,4 @@ const Notes = () => {
   );
 };
 
-export default Notes;
+export default NotesEleve;

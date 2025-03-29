@@ -1,12 +1,14 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { School, Menu, X } from "lucide-react";
+import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
-import { NavItem } from "./NavItem";
+import { NavItem as NavItemComponent } from "./NavItem";
 import { UserProfile } from "./UserProfile";
+import { User, NavItem } from '@/types/navigation';
+import { toast } from 'sonner';
 
 const Navigation = () => {
   const location = useLocation();
@@ -38,8 +40,8 @@ const Navigation = () => {
       case 'admin':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/administration/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
@@ -58,8 +60,8 @@ const Navigation = () => {
       case 'professeur':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/professeurs/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
@@ -67,18 +69,18 @@ const Navigation = () => {
             icon: UserCircle,
             label: "Professeurs",
             subItems: [
-              { to: "/professeurs/classes", label: "Liste des classes" },
-              { to: "/professeurs/emploi-du-temps", label: "Emploi du temps" },
+              { to: "/professeurs/classes", label: "Liste des éleves" },
+              { to: "/professeurs/emploi-du-temps", label: "Mon emploi du temps" },
               { to: "/professeurs/notes", label: "Gestion des notes" },
-              { to: "/professeurs/syllabus", label: "Syllabus" }
+              { to: "/professeurs/syllabus", label: "Syllabus" },
             ]
           }
         ];
       case 'eleve':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/eleves/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
@@ -98,8 +100,8 @@ const Navigation = () => {
       case 'parent':
         return [
           {
-            to: "/dashboard",
-            icon: <LayoutDashboard size={20} />,
+            to: "/parents/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
@@ -156,7 +158,7 @@ const Navigation = () => {
           <div className="flex-1 overflow-y-auto p-4">
             <nav className="space-y-1">
               {navItems.map((item) => (
-                <NavItem
+                <NavItemComponent
                   key={item.to}
                   to={item.to}
                   icon={item.icon}

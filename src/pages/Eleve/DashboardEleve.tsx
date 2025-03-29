@@ -22,7 +22,7 @@ const DashboardEleve = () => {
         <Button 
           variant="ghost" 
           size="icon"
-          onClick={() => navigate('/eleve')}
+          onClick={() => navigate('/eleves/emploi-du-temps')}
           className="hover:bg-slate-100"
         >
           <ArrowLeft className="h-6 w-6 text-[#0046AD]" />

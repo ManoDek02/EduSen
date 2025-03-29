@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Download, Upload, Mail, Phone } from 'lucide-react';
+import { PlusCircle, Download, Mail, Phone } from 'lucide-react';
 import DataTable from '@/components/tables/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -124,11 +124,6 @@ const Professeurs = () => {
     toast.success(`Export des professeurs en format ${format.toUpperCase()} effectué`);
   };
 
-  const handleImport = () => {
-    // TODO: Implémenter l'import
-    toast.success('Import des professeurs effectué');
-  };
-
   const columns = [
     {
       key: 'id',
@@ -204,10 +199,6 @@ const Professeurs = () => {
           description="Gérez les professeurs et leur affectation"
           actions={
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={handleImport}>
-                <Upload className="mr-2 h-4 w-4" />
-                Importer
-              </Button>
               <Button variant="outline" onClick={() => handleExport('csv')}>
                 <Download className="mr-2 h-4 w-4" />
                 Exporter

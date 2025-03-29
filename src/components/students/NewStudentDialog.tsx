@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -46,10 +45,6 @@ const NewStudentDialog = ({ onAddStudent }) => {
 
   const handleClasseChange = (value) => {
     setFormData(prev => ({ ...prev, classe: value }));
-  };
-
-  const handleStatusChange = (value) => {
-    setFormData(prev => ({ ...prev, status: value }));
   };
 
   const handleSubmit = (e) => {
@@ -210,22 +205,6 @@ const NewStudentDialog = ({ onAddStudent }) => {
               onChange={handleChange} 
               placeholder="Adresse complète"
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Statut</Label>
-            <Select 
-              value={formData.status} 
-              onValueChange={handleStatusChange}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Actif">Actif</SelectItem>
-                <SelectItem value="Inactif">Inactif</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <DialogFooter className="pt-4">
