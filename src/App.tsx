@@ -18,6 +18,16 @@ import SyllabusProf from "./pages/Professeur/SyllabusProf";
 
 // Routes pour les élèves
 import Syllabus from "./pages/eleves/Syllabus";
+import EmploiDuTemp from "./pages/eleves/EmploiDuTemp";
+import NotesEleve from "./pages/eleves/NotesEleve";
+import Bulletin from "./pages/eleves/Bulletin";
+
+
+// Dashboard
+import DashboardAdmin from "./pages/administration/DashboardAdmin";
+import DashboardParents from "./pages/Parent/DashboardParent";
+import DashboardProf from "./pages/Professeur/DashboardProf";
+import DashboardEleves from "./pages/Eleve/DashboardEleve";
 
 // Routes pour les professeurs
 // Ces composants seront créés à la demande
@@ -54,7 +64,7 @@ const App = () => (
           
           {/* Routes Élèves */}
           <Route path="/eleves/syllabus" element={<Syllabus />} />
-          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemps />} />
+          <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
           <Route path="/eleves/notes" element={<NotesEleve />} />
           <Route path="/eleves/bulletin" element={<Bulletin />} />
           <Route path="/eleves/contact-professeurs" element={<Professeurs />} />
