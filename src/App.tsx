@@ -14,7 +14,10 @@ import Bulletins from "./pages/administration/Bulletins";
 import EmploiDuTempsProf from "./pages/Professeur/EmploiDuTempsProf";
 import ElevesProf from "./pages/Professeur/ElevesProf";
 import SyllabusProf from "./pages/Professeur/SyllabusProf";
-
+import Notifications from "./pages/eleves/Notifications";
+import ContactProfesseurs from "./pages/eleves/Contactprofesseurs";
+import Baki from "./pages/eleves/Baki";
+import DashboardEleve from "./pages/eleves/DashboardEleve";
 
 // Routes pour les élèves
 import Syllabus from "./pages/eleves/Syllabus";
@@ -62,15 +65,16 @@ const App = () => (
           <Route path="/professeurs/dashboard" element={<DashboardProf />} />
 
           {/* Routes Élèves */}
+          <Route path="/eleves/dashboard" element={<DashboardEleve />} />
           <Route path="/eleves/syllabus" element={<Syllabus />} />
           <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
           <Route path="/eleves/emploi-du-temps" element={<EmploiDuTemp />} />
           <Route path="/eleves/notes" element={<NotesEleve />} />
           <Route path="/eleves/bulletin" element={<Bulletin />} />
-          <Route path="/eleves/contact-professeurs" element={<Professeurs />} />
-          <Route path="/eleves/baki" element={<Eleves />} />
-          <Route path="/eleves/dashboard" element={<DashboardEleves />} />
-                   
+          <Route path="/eleves/notifications" element={<Notifications />} />
+          <Route path="/eleves/contact-professeurs" element={<ContactProfesseurs />} />
+          <Route path="/eleves/baki" element={<Baki />} />
+          
           {/* Routes Parents */}
           <Route path="/parents" element={<Dashboard />} />
           <Route path="/parents/dashboard" element={<DashboardParents />} />

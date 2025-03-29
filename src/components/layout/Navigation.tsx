@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
+import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { School, Menu, X, LayoutDashboard, UserCircle, GraduationCap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigation } from "@/hooks/use-navigation";
 import { NavItem as NavItemComponent } from "./NavItem";
 import { UserProfile } from "./UserProfile";
-import { User, NavItem } from '@/types/navigation';
+import { User } from "@/types/user";
 import { toast } from 'sonner';
 
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -40,12 +44,13 @@ const Navigation = () => {
       case 'admin':
         return [
           {
-            to: "/administration/dashboard",
+            to: "/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/administration",
+            icon: School,
             icon: School,
             label: "Administration",
             subItems: [
@@ -60,12 +65,13 @@ const Navigation = () => {
       case 'professeur':
         return [
           {
-            to: "/professeurs/dashboard",
+            to: "/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/professeurs",
+            icon: UserCircle,
             icon: UserCircle,
             label: "Professeurs",
             subItems: [
@@ -81,10 +87,13 @@ const Navigation = () => {
           {
             to: "/eleves/dashboard",
             icon: LayoutDashboard,
+            to: "/eleves/dashboard",
+            icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/eleves",
+            icon: GraduationCap,
             icon: GraduationCap,
             label: "Élèves",
             subItems: [
@@ -92,6 +101,7 @@ const Navigation = () => {
               { to: "/eleves/emploi-du-temps", label: "Emploi du temps" },
               { to: "/eleves/notes", label: "Notes" },
               { to: "/eleves/bulletin", label: "Bulletin" },
+              { to: "/eleves/notifications", label: "Notifications" },
               { to: "/eleves/contact-professeurs", label: "Contact professeurs" },
               { to: "/eleves/baki", label: "Baki (Anciens sujets)" }
             ]
@@ -100,12 +110,13 @@ const Navigation = () => {
       case 'parent':
         return [
           {
-            to: "/parents/dashboard",
+            to: "/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/parents",
+            icon: Users,
             icon: Users,
             label: "Parents"
           }
