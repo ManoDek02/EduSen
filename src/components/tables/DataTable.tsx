@@ -42,7 +42,6 @@ const DataTable: React.FC<DataTableProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [internalSearchTerm, setInternalSearchTerm] = useState('');
   
-  // Gestion de l'état de recherche - interne ou externe
   const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
   
   useEffect(() => {
@@ -60,7 +59,6 @@ const DataTable: React.FC<DataTableProps> = ({
     }
   };
 
-  // Filter data based on search term if no external search handler
   const filteredData = externalOnSearch 
     ? data 
     : (searchTerm
@@ -73,7 +71,6 @@ const DataTable: React.FC<DataTableProps> = ({
           )
         : data);
 
-  // Paginate data
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = pagination
     ? filteredData.slice(
@@ -82,7 +79,6 @@ const DataTable: React.FC<DataTableProps> = ({
       )
     : filteredData;
 
-  // Reset to first page when data changes
   useEffect(() => {
     setCurrentPage(1);
   }, [data]);
@@ -101,7 +97,6 @@ const DataTable: React.FC<DataTableProps> = ({
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Search and filters */}
       {searchable && (
         <TableSearch 
           searchTerm={searchTerm} 
@@ -110,8 +105,7 @@ const DataTable: React.FC<DataTableProps> = ({
         />
       )}
 
-      {/* Table */}
-      <div className="rounded-md border bg-card overflow-hidden animate-fade-in">
+      <div className="rounded-md border bg-card overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -156,7 +150,6 @@ const DataTable: React.FC<DataTableProps> = ({
         </Table>
       </div>
 
-      {/* Pagination */}
       {pagination && totalPages > 0 && (
         <TablePagination
           currentPage={currentPage}
