@@ -15,7 +15,7 @@ const TableSearch: React.FC<TableSearchProps> = ({
   additionalFilters
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+    <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-4">
       <div className="relative w-full sm:w-auto">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input

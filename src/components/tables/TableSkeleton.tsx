@@ -14,10 +14,10 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
   return (
     <>
       {Array.from({ length: rowCount }).map((_, index) => (
-        <TableRow key={`skeleton-${index}`}>
+        <TableRow key={`skeleton-${index}`} className="animate-pulse">
           {Array.from({ length: columnCount }).map((_, cellIndex) => (
             <TableCell key={`skeleton-cell-${index}-${cellIndex}`}>
-              <div className="h-4 w-full bg-muted animate-pulse rounded" />
+              <div className="h-4 w-full bg-muted rounded" />
             </TableCell>
           ))}
         </TableRow>
