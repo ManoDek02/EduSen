@@ -14,13 +14,18 @@ import { Eleve } from '@/types/eleve';
 import { filterEleves } from '@/services/elevesService';
 import { toast } from 'sonner';
 
+interface FilterOptions {
+  status?: string[];
+  // Autres options de filtrage
+}
+
 const ElevesProf = () => {
   const [selectedEleve, setSelectedEleve] = useState<Eleve | null>(null);
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [eleves, setEleves] = useState<Eleve[]>([]);
   const [filteredEleves, setFilteredEleves] = useState<Eleve[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilters, setActiveFilters] = useState({});
+  const [activeFilters, setActiveFilters] = useState<FilterOptions>({});
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +45,7 @@ const ElevesProf = () => {
     }
   };
 
-  const handleApplyFilters = async (filters) => {
+  const handleApplyFilters = async (filters: FilterOptions) => {
     setActiveFilters(filters);
     try {
       setLoading(true);

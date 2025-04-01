@@ -1,23 +1,14 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import EleveActions from './EleveActions';
+import { Eleve } from '@/types/eleve';
 
 type Column = {
   key: string;
   header: string;
   cell?: (row: any) => React.ReactNode;
 };
-
-interface Eleve {
-  id: string;
-  nom: string;
-  prenom: string;
-  classe: string;
-  dateNaissance: string;
-  responsable: string;
-  status: string;
-  [key: string]: string;
-}
 
 export const getElevesColumns = (
   onEdit: (eleve: Eleve) => void,
