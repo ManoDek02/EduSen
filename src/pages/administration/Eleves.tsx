@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import DataTable from '@/components/tables/DataTable';
@@ -7,7 +8,6 @@ import ImportStudentsDialog from '@/components/students/ImportStudentsDialog';
 import ExportStudentsButton from '@/components/students/ExportStudentsButton';
 import FilterStudentsDialog from '@/components/students/FilterStudentsDialog';
 import { getElevesColumns } from '@/components/students/ElevesTableColumns';
-import { elevesMockData } from '@/data/elevesMockData';
 import { toast } from 'sonner';
 import EleveDetailDialog from '@/components/students/EleveDetailDialog';
 import EditStudentDialog from '@/components/students/EditStudentDialog';
@@ -21,17 +21,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface Eleve {
-  id: string;
-  nom: string;
-  prenom: string;
-  classe: string;
-  dateNaissance: string;
-  responsable: string;
-  status: string;
-  [key: string]: string;
-}
+import { Eleve } from '@/types/eleve';
+import { getEleves, addEleve, updateEleve, deleteEleve, filterEleves } from '@/services/elevesService';
 
 interface Filters {
   classe?: string;
@@ -41,30 +32,88 @@ interface Filters {
 
 const Eleves = () => {
   const [selectedEleve, setSelectedEleve] = useState<Eleve | null>(null);
-  const [eleves, setEleves] = useState<Eleve[]>(elevesMockData);
-  const [filteredEleves, setFilteredEleves] = useState<Eleve[]>(elevesMockData);
+  const [eleves, setEleves] = useState<Eleve[]>([]);
+  const [filteredEleves, setFilteredEleves] = useState<Eleve[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState<Filters>({});
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddStudent = (newStudent: Eleve) => {
-    setEleves([...eleves, newStudent]);
-    setFilteredEleves([...eleves, newStudent]);
-    toast.success("Élève ajouté avec succès");
+  // Charger les élèves depuis Supabase au chargement de la page
+  useEffect(() => {
+    const loadEleves = async () => {
+      try {
+        setLoading(true);
+        const data = await getEleves();
+        setEleves(data);
+        setFilteredEleves(data);
+      } catch (error) {
+        toast.error("Erreur lors du chargement des élèves");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEleves();
+  }, []);
+
+  const handleAddStudent = async (newStudent: Omit<Eleve, 'id'>) => {
+    try {
+      setLoading(true);
+      const addedEleve = await addEleve(newStudent);
+      setEleves(prev => [...prev, addedEleve]);
+      setFilteredEleves(prev => [...prev, addedEleve]);
+      toast.success("Élève ajouté avec succès");
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout de l'élève");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleImportStudents = (importedStudents: Eleve[]) => {
-    const updatedEleves = [...eleves, ...importedStudents];
-    setEleves(updatedEleves);
-    applyFiltersAndSearch(updatedEleves, searchTerm, activeFilters);
-    toast.success(`${importedStudents.length} élèves importés avec succès`);
+  const handleImportStudents = async (importedStudents: Omit<Eleve, 'id'>[]) => {
+    try {
+      setLoading(true);
+      const addedEleves = [];
+      
+      for (const student of importedStudents) {
+        const addedEleve = await addEleve(student);
+        addedEleves.push(addedEleve);
+      }
+      
+      const updatedEleves = [...eleves, ...addedEleves];
+      setEleves(updatedEleves);
+      applyFiltersAndSearch(updatedEleves, searchTerm, activeFilters);
+      toast.success(`${importedStudents.length} élèves importés avec succès`);
+    } catch (error) {
+      toast.error("Erreur lors de l'importation des élèves");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleApplyFilters = (filters: Filters) => {
+  const handleApplyFilters = async (filters: Filters) => {
     setActiveFilters(filters);
-    applyFiltersAndSearch(eleves, searchTerm, filters);
+    try {
+      setLoading(true);
+      const filteredData = await filterEleves({
+        terme: searchTerm,
+        classe: filters.classe,
+        niveaux: filters.niveaux,
+        statut: filters.statut
+      });
+      setFilteredEleves(filteredData);
+    } catch (error) {
+      toast.error("Erreur lors du filtrage des élèves");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = (term: string) => {
@@ -72,49 +121,22 @@ const Eleves = () => {
     applyFiltersAndSearch(eleves, term, activeFilters);
   };
 
-  const applyFiltersAndSearch = (data: Eleve[], term: string, filters: Filters) => {
-    let result = [...data];
-
-    // Appliquer les filtres
-    if (filters.classe) {
-      result = result.filter(eleve => eleve.classe === filters.classe);
-    }
-
-    if (filters.niveaux && filters.niveaux.length > 0) {
-      const niveauMapping = {
-        '1': ['6ème', '5ème', '4ème', '3ème'],
-        '2': ['2nde', '1ère', 'Terminale']
-      };
-
-      result = result.filter(eleve => {
-        for (const niveauId of filters.niveaux) {
-          const niveauClasses = niveauMapping[niveauId];
-          for (const niveauClasse of niveauClasses) {
-            if (eleve.classe.includes(niveauClasse)) {
-              return true;
-            }
-          }
-        }
-        return false;
+  const applyFiltersAndSearch = async (data: Eleve[], term: string, filters: Filters) => {
+    try {
+      setLoading(true);
+      const filteredData = await filterEleves({
+        terme: term,
+        classe: filters.classe,
+        niveaux: filters.niveaux,
+        statut: filters.statut
       });
+      setFilteredEleves(filteredData);
+    } catch (error) {
+      toast.error("Erreur lors du filtrage des élèves");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-
-    if (filters.statut && filters.statut.length > 0) {
-      result = result.filter(eleve => filters.statut.includes(eleve.status));
-    }
-
-    // Appliquer la recherche
-    if (term) {
-      result = result.filter(eleve => 
-        Object.values(eleve).some(
-          value => 
-            value && 
-            value.toString().toLowerCase().includes(term.toLowerCase())
-        )
-      );
-    }
-
-    setFilteredEleves(result);
   };
 
   const handleViewEleve = (eleve: Eleve) => {
@@ -132,26 +154,49 @@ const Eleves = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedEleve) {
-      const updatedEleves = eleves.filter(e => e.id !== selectedEleve.id);
-      setEleves(updatedEleves);
-      applyFiltersAndSearch(updatedEleves, searchTerm, activeFilters);
-      setIsDeleteDialogOpen(false);
-      setSelectedEleve(null);
-      toast.success("Élève supprimé avec succès");
+      try {
+        setLoading(true);
+        await deleteEleve(selectedEleve.id);
+        const updatedEleves = eleves.filter(e => e.id !== selectedEleve.id);
+        setEleves(updatedEleves);
+        setFilteredEleves(updatedEleves.filter(e => 
+          (!activeFilters.classe || e.classe === activeFilters.classe) &&
+          (!activeFilters.statut || activeFilters.statut.includes(e.status))
+        ));
+        setIsDeleteDialogOpen(false);
+        setSelectedEleve(null);
+        toast.success("Élève supprimé avec succès");
+      } catch (error) {
+        toast.error("Erreur lors de la suppression de l'élève");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleUpdateEleve = (updatedEleve: Eleve) => {
-    const updatedEleves = eleves.map(e => 
-      e.id === updatedEleve.id ? updatedEleve : e
-    );
-    setEleves(updatedEleves);
-    applyFiltersAndSearch(updatedEleves, searchTerm, activeFilters);
-    setIsEditDialogOpen(false);
-    setSelectedEleve(null);
-    toast.success("Élève modifié avec succès");
+  const handleUpdateEleve = async (updatedEleveData: Eleve) => {
+    if (selectedEleve) {
+      try {
+        setLoading(true);
+        const updated = await updateEleve(selectedEleve.id, updatedEleveData);
+        const updatedEleves = eleves.map(e => 
+          e.id === selectedEleve.id ? updated : e
+        );
+        setEleves(updatedEleves);
+        applyFiltersAndSearch(updatedEleves, searchTerm, activeFilters);
+        setIsEditDialogOpen(false);
+        setSelectedEleve(null);
+        toast.success("Élève modifié avec succès");
+      } catch (error) {
+        toast.error("Erreur lors de la modification de l'élève");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   // Get the table columns from our extracted component
@@ -183,6 +228,7 @@ const Eleves = () => {
           searchable={true}
           searchTerm={searchTerm}
           onSearch={handleSearch}
+          loading={loading}
           additionalFilters={
             <FilterStudentsDialog onApplyFilters={handleApplyFilters} />
           }

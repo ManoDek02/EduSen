@@ -1,75 +1,79 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import DataTable from '@/components/tables/DataTable';
 import FilterStudentsDialog from '@/components/students/FilterStudentsDialog';
 import { getElevesColumns } from '@/components/students/ElevesTableColumns';
-import { elevesMockData } from '@/data/elevesMockData';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Download, FileSpreadsheet, File } from 'lucide-react';
+import { FileSpreadsheet, File } from 'lucide-react';
 import EleveDetailDialog from '@/components/students/EleveDetailDialog';
 import { professeurConnecte } from '@/types/professeur';
-
-interface Eleve {
-  id: string;
-  nom: string;
-  prenom: string;
-  classe: string;
-  dateNaissance: string;
-  responsable: string;
-  status: string;
-  [key: string]: string;
-}
+import { Eleve } from '@/types/eleve';
+import { filterEleves } from '@/services/elevesService';
+import { toast } from 'sonner';
 
 const ElevesProf = () => {
   const [selectedEleve, setSelectedEleve] = useState<Eleve | null>(null);
   const [selectedClass, setSelectedClass] = useState<string>("");
-  const [eleves] = useState<Eleve[]>(elevesMockData);
+  const [eleves, setEleves] = useState<Eleve[]>([]);
   const [filteredEleves, setFilteredEleves] = useState<Eleve[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Filtrer les élèves pour ne garder que ceux des classes assignées au professeur
-  const professeurEleves = eleves.filter(eleve => 
-    professeurConnecte.classes.some(classe => classe.id === eleve.classe)
-  );
-
-  const handleClassChange = (classe: string) => {
+  // Charger les élèves quand une classe est sélectionnée
+  const handleClassChange = async (classe: string) => {
     setSelectedClass(classe);
-    const elevesClasse = professeurEleves.filter(eleve => eleve.classe === classe);
-    setFilteredEleves(elevesClasse);
+    try {
+      setLoading(true);
+      const data = await filterEleves({ classe });
+      setEleves(data);
+      setFilteredEleves(data);
+    } catch (error) {
+      toast.error("Erreur lors du chargement des élèves");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleApplyFilters = (filters) => {
+  const handleApplyFilters = async (filters) => {
     setActiveFilters(filters);
-    applyFiltersAndSearch(professeurEleves.filter(eleve => eleve.classe === selectedClass), searchTerm, filters);
+    try {
+      setLoading(true);
+      const data = await filterEleves({ 
+        classe: selectedClass,
+        terme: searchTerm,
+        statut: filters.status
+      });
+      setFilteredEleves(data);
+    } catch (error) {
+      toast.error("Erreur lors du filtrage des élèves");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSearch = (term: string) => {
+  const handleSearch = async (term: string) => {
     setSearchTerm(term);
-    applyFiltersAndSearch(professeurEleves.filter(eleve => eleve.classe === selectedClass), term, activeFilters);
-  };
-
-  const applyFiltersAndSearch = (data: Eleve[], term: string, filters: any) => {
-    let result = [...data];
-
-    if (filters.status && filters.status.length > 0) {
-      result = result.filter(eleve => filters.status.includes(eleve.status));
+    try {
+      setLoading(true);
+      const data = await filterEleves({ 
+        classe: selectedClass,
+        terme: term,
+        statut: activeFilters.status
+      });
+      setFilteredEleves(data);
+    } catch (error) {
+      toast.error("Erreur lors de la recherche");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-
-    if (term) {
-      result = result.filter(eleve => 
-        Object.values(eleve).some(
-          value => 
-            value && 
-            value.toString().toLowerCase().includes(term.toLowerCase())
-        )
-      );
-    }
-
-    setFilteredEleves(result);
   };
 
   const handleViewEleve = (eleve: Eleve) => {
@@ -79,6 +83,8 @@ const ElevesProf = () => {
 
   const handleExport = (format: 'excel' | 'pdf') => {
     console.log(`Export ${format} pour la classe ${selectedClass}`);
+    toast.success(`Exportation au format ${format} en cours...`);
+    // Logique d'exportation à implémenter
   };
 
   const columns = getElevesColumns(() => {}, () => {}, handleViewEleve);
@@ -128,6 +134,7 @@ const ElevesProf = () => {
             searchable={true}
             searchTerm={searchTerm}
             onSearch={handleSearch}
+            loading={loading}
             additionalFilters={
               <FilterStudentsDialog onApplyFilters={handleApplyFilters} />
             }
