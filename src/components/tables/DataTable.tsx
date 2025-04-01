@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import TableSearch from './TableSearch';
+import TablePagination from './TablePagination';
+import TableSkeleton from './TableSkeleton';
 
 type Column = {
   key: string;
@@ -27,7 +26,7 @@ type DataTableProps = {
   onSearch?: (term: string) => void;
 };
 
-const DataTable = ({
+const DataTable: React.FC<DataTableProps> = ({
   columns,
   data,
   searchable = true,
@@ -39,11 +38,10 @@ const DataTable = ({
   additionalFilters,
   searchTerm: externalSearchTerm,
   onSearch: externalOnSearch
-}: DataTableProps) => {
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [internalSearchTerm, setInternalSearchTerm] = useState('');
-  const isMobile = useIsMobile();
-
+  
   // Gestion de l'état de recherche - interne ou externe
   const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
   
@@ -53,7 +51,7 @@ const DataTable = ({
     }
   }, [externalSearchTerm]);
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setInternalSearchTerm(term);
     
@@ -105,18 +103,11 @@ const DataTable = ({
     <div className={cn("space-y-4", className)}>
       {/* Search and filters */}
       {searchable && (
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher..."
-              className="pl-8 w-full sm:w-[300px]"
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
-          </div>
-          {additionalFilters}
-        </div>
+        <TableSearch 
+          searchTerm={searchTerm} 
+          onSearchChange={handleSearchChange}
+          additionalFilters={additionalFilters}
+        />
       )}
 
       {/* Table */}
@@ -133,15 +124,7 @@ const DataTable = ({
           </TableHeader>
           <TableBody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={`skeleton-${index}`}>
-                  {columns.map(column => (
-                    <TableCell key={`skeleton-${column.key}-${index}`}>
-                      <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <TableSkeleton columnCount={columns.length} />
             ) : paginatedData.length > 0 ? (
               paginatedData.map((row, index) => (
                 <TableRow 
@@ -175,36 +158,14 @@ const DataTable = ({
 
       {/* Pagination */}
       {pagination && totalPages > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Affichage de {(currentPage - 1) * itemsPerPage + 1} à{' '}
-            {Math.min(currentPage * itemsPerPage, filteredData.length)} sur{' '}
-            {filteredData.length} entrées
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              {!isMobile && <span className="ml-1">Précédent</span>}
-            </Button>
-            <div className="text-sm">
-              Page {currentPage} sur {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-            >
-              {!isMobile && <span className="mr-1">Suivant</span>}
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
+          totalItems={filteredData.length}
+          onNextPage={handleNextPage}
+          onPrevPage={handlePrevPage}
+        />
       )}
     </div>
   );
