@@ -110,7 +110,6 @@ const Navigation = () => {
           {
             to: "/parents",
             icon: Users,
-            icon: Users,
             label: "Parents"
           }
         ];
