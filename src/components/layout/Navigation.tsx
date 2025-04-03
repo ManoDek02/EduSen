@@ -42,7 +42,7 @@ const Navigation = () => {
       case 'admin':
         return [
           {
-            to: "/dashboard",
+            to: "/administration/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
@@ -62,7 +62,7 @@ const Navigation = () => {
       case 'professeur':
         return [
           {
-            to: "/dashboard",
+            to: "/professeurs/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
@@ -103,12 +103,13 @@ const Navigation = () => {
       case 'parent':
         return [
           {
-            to: "/dashboard",
+            to: "/parents/dashboard",
             icon: LayoutDashboard,
             label: "Tableau de bord"
           },
           {
             to: "/parents",
+            icon: Users,
             icon: Users,
             label: "Parents"
           }
