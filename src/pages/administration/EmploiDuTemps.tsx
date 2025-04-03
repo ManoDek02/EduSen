@@ -16,6 +16,7 @@ import { EmploiDuTempsGrid } from '@/components/emploi-du-temps/EmploiDuTempsGri
 import { PDFExportDialog } from '@/components/emploi-du-temps/PDFExportDialog';
 import { VacancesDialog } from '@/components/emploi-du-temps/VacancesDialog';
 import { ProfesseurEmploiDuTemps } from '@/components/emploi-du-temps/ProfesseurEmploiDuTemps';
+import '@/styles/emploi-du-temps.css';
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 const heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
@@ -181,7 +182,7 @@ const classesData = {
 const CoursItem = ({ cours }: { cours: Cours }) => {
   return (
     <div
-      className="absolute rounded-md border p-2 flex flex-col overflow-hidden shadow-sm transition-all hover:shadow-md cursor-pointer"
+      className="cours-item"
       style={{
         top: `${cours.debut * 60 + 40}px`,
         height: `${cours.duree * 60 - 4}px`,

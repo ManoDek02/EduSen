@@ -1,133 +1,186 @@
-
-import { supabase } from '@/lib/supabase';
+import pool from '@/config/database';
 import { Eleve } from '@/types/eleve';
 
-// Récupérer tous les élèves
-export async function getEleves(): Promise<Eleve[]> {
-  const { data, error } = await supabase
-    .from('eleves')
-    .select('*')
-    .order('nom', { ascending: true });
+export const getEleves = async (): Promise<Eleve[]> => {
+  const query = `
+    SELECT e.*, u.nom, u.prenom, u.email
+    FROM eleves e
+    JOIN users u ON e.user_id = u.id
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+};
 
-  if (error) {
-    console.error('Erreur lors de la récupération des élèves:', error);
-    throw new Error(error.message);
+export const getEleveById = async (id: number): Promise<Eleve | null> => {
+  const query = `
+    SELECT e.*, u.nom, u.prenom, u.email
+    FROM eleves e
+    JOIN users u ON e.user_id = u.id
+    WHERE e.id = $1
+  `;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};
+
+export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Créer l'utilisateur
+    const userQuery = `
+      INSERT INTO users (matricule, email, nom, prenom, role, password_hash)
+      VALUES ($1, $2, $3, $4, 'eleve', $5)
+      RETURNING id
+    `;
+    const userResult = await client.query(userQuery, [
+      eleve.matricule,
+      eleve.email,
+      eleve.nom,
+      eleve.prenom,
+      eleve.password_hash
+    ]);
+
+    // Créer l'élève
+    const eleveQuery = `
+      INSERT INTO eleves (user_id, classe, date_naissance, responsable, status)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `;
+    const eleveResult = await client.query(eleveQuery, [
+      userResult.rows[0].id,
+      eleve.classe,
+      eleve.dateNaissance,
+      eleve.responsable,
+      eleve.status
+    ]);
+
+    await client.query('COMMIT');
+
+    return {
+      ...eleveResult.rows[0],
+      nom: eleve.nom,
+      prenom: eleve.prenom,
+      email: eleve.email
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
+};
 
-  return data || [];
-}
+export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<Eleve> => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-// Récupérer un élève par son ID
-export async function getEleveById(id: string): Promise<Eleve | null> {
-  const { data, error } = await supabase
-    .from('eleves')
-    .select('*')
-    .eq('id', id)
-    .single();
+    // Mettre à jour l'utilisateur
+    if (eleve.nom || eleve.prenom || eleve.email) {
+      const userQuery = `
+        UPDATE users
+        SET nom = COALESCE($1, nom),
+            prenom = COALESCE($2, prenom),
+            email = COALESCE($3, email)
+        FROM eleves
+        WHERE users.id = eleves.user_id AND eleves.id = $4
+      `;
+      await client.query(userQuery, [
+        eleve.nom,
+        eleve.prenom,
+        eleve.email,
+        id
+      ]);
+    }
 
-  if (error) {
-    console.error(`Erreur lors de la récupération de l'élève ${id}:`, error);
-    throw new Error(error.message);
+    // Mettre à jour l'élève
+    const eleveQuery = `
+      UPDATE eleves
+      SET classe = COALESCE($1, classe),
+          date_naissance = COALESCE($2, date_naissance),
+          responsable = COALESCE($3, responsable),
+          status = COALESCE($4, status)
+      WHERE id = $5
+      RETURNING *
+    `;
+    const result = await client.query(eleveQuery, [
+      eleve.classe,
+      eleve.dateNaissance,
+      eleve.responsable,
+      eleve.status,
+      id
+    ]);
+
+    await client.query('COMMIT');
+
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
+};
 
-  return data;
-}
+export const deleteEleve = async (id: number): Promise<void> => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-// Ajouter un nouvel élève
-export async function addEleve(eleve: Omit<Eleve, 'id'>): Promise<Eleve> {
-  const { data, error } = await supabase
-    .from('eleves')
-    .insert([eleve])
-    .select()
-    .single();
+    // Supprimer l'élève
+    const eleveQuery = 'DELETE FROM eleves WHERE id = $1 RETURNING user_id';
+    const result = await client.query(eleveQuery, [id]);
 
-  if (error) {
-    console.error('Erreur lors de l\'ajout d\'un élève:', error);
-    throw new Error(error.message);
+    // Supprimer l'utilisateur associé
+    if (result.rows[0]) {
+      await client.query('DELETE FROM users WHERE id = $1', [result.rows[0].user_id]);
+    }
+
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
+};
 
-  return data;
-}
-
-// Mettre à jour un élève existant
-export async function updateEleve(id: string, eleve: Partial<Eleve>): Promise<Eleve> {
-  const { data, error } = await supabase
-    .from('eleves')
-    .update(eleve)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error(`Erreur lors de la mise à jour de l'élève ${id}:`, error);
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-// Supprimer un élève
-export async function deleteEleve(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('eleves')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error(`Erreur lors de la suppression de l'élève ${id}:`, error);
-    throw new Error(error.message);
-  }
-}
-
-// Filtrer les élèves
-export async function filterEleves(filters: {
-  terme?: string;
+export const filterEleves = async (filters: {
+  status?: string[];
   classe?: string;
-  niveaux?: string[];
-  statut?: string[];
-}): Promise<Eleve[]> {
-  let query = supabase
-    .from('eleves')
-    .select('*');
+  searchTerm?: string;
+}): Promise<Eleve[]> => {
+  let query = `
+    SELECT e.*, u.nom, u.prenom, u.email
+    FROM eleves e
+    JOIN users u ON e.user_id = u.id
+    WHERE 1=1
+  `;
+  const params: any[] = [];
+  let paramIndex = 1;
+
+  if (filters.status && filters.status.length > 0) {
+    query += ` AND e.status = ANY($${paramIndex})`;
+    params.push(filters.status);
+    paramIndex++;
+  }
 
   if (filters.classe) {
-    query = query.eq('classe', filters.classe);
+    query += ` AND e.classe = $${paramIndex}`;
+    params.push(filters.classe);
+    paramIndex++;
   }
 
-  if (filters.statut && filters.statut.length > 0) {
-    query = query.in('status', filters.statut);
+  if (filters.searchTerm) {
+    query += ` AND (
+      u.nom ILIKE $${paramIndex} OR
+      u.prenom ILIKE $${paramIndex} OR
+      u.email ILIKE $${paramIndex}
+    )`;
+    params.push(`%${filters.searchTerm}%`);
   }
 
-  if (filters.terme) {
-    query = query.or(`nom.ilike.%${filters.terme}%,prenom.ilike.%${filters.terme}%,classe.ilike.%${filters.terme}%,responsable.ilike.%${filters.terme}%`);
-  }
-
-  const { data, error } = await query.order('nom', { ascending: true });
-
-  if (error) {
-    console.error('Erreur lors du filtrage des élèves:', error);
-    throw new Error(error.message);
-  }
-
-  // Filtrage côté client pour les niveaux (plus complexe)
-  if (filters.niveaux && filters.niveaux.length > 0) {
-    const niveauMapping = {
-      '1': ['6ème', '5ème', '4ème', '3ème'],
-      '2': ['2nde', '1ère', 'Terminale']
-    };
-
-    return data.filter(eleve => {
-      for (const niveauId of filters.niveaux) {
-        const niveauClasses = niveauMapping[niveauId];
-        for (const niveauClasse of niveauClasses) {
-          if (eleve.classe.includes(niveauClasse)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    });
-  }
-
-  return data || [];
-}
+  const result = await pool.query(query, params);
+  return result.rows;
+};
