@@ -28,7 +28,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onSubmit, selectedClass, selectedMa
       note: 0,
       coefficient: 1,
       professeur: '',
-      trimestre: 1,
+      semestre: 1,
       dateEvaluation: new Date().toISOString().split('T')[0],
       commentaire: '',
       type: '',

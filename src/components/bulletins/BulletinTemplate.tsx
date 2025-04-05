@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatDate } from '@/lib/utils';
-import { Bulletin, BulletinMatiere } from '@/data/bulletinsMockData';
+import { Bulletin, BulletinMatiere } from '@/types/bulletin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { School, Users, Calendar, Award, GraduationCap, FileText } from 'lucide-react';
@@ -36,7 +36,7 @@ const BulletinTemplate: React.FC<BulletinTemplateProps> = ({ bulletin, printMode
         <div className="text-right">
           <Badge variant="outline" className="mb-1">
             <Calendar className="mr-1 h-4 w-4" />
-            Trimestre {bulletin.trimestre}
+            Semestre {bulletin.semestre}
           </Badge>
           <p className="text-sm text-muted-foreground">
             {printMode && bulletin.datePrinted ? `Imprimé le ${formatDate(bulletin.datePrinted)}` : ""}

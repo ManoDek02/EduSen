@@ -7,11 +7,11 @@ export const getCours = async (): Promise<Cours[]> => {
     FROM cours c
     JOIN professeurs p ON c.professeur_id = p.id
   `;
-  const result = await pool.query(query);
-  return result.rows.map(row => ({
+  const [result] = await pool.query(query);
+  return result.map(row => ({
     ...row,
     professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  }));
+  })) as Cours[];
 };
 
 export const getCoursById = async (id: number): Promise<Cours | null> => {
@@ -21,10 +21,10 @@ export const getCoursById = async (id: number): Promise<Cours | null> => {
     JOIN professeurs p ON c.professeur_id = p.id
     WHERE c.id = $1
   `;
-  const result = await pool.query(query, [id]);
-  if (!result.rows[0]) return null;
+  const [result] = await pool.query(query, [id]);
+  if (!result[0]) return null;
   
-  const row = result.rows[0];
+  const row = result[0];
   return {
     ...row,
     professeur: `${row.professeur_prenom} ${row.professeur_nom}`
@@ -40,7 +40,7 @@ export const createCours = async (cours: Omit<Cours, 'id'>): Promise<Cours> => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const [result] = await pool.query(query, [
     cours.classe,
     cours.matiere,
     cours.professeurId,
@@ -50,7 +50,7 @@ export const createCours = async (cours: Omit<Cours, 'id'>): Promise<Cours> => {
     cours.duree,
     cours.couleur
   ]);
-  return result.rows[0];
+  return result[0];
 };
 
 export const updateCours = async (id: number, cours: Partial<Cours>): Promise<Cours> => {
@@ -67,7 +67,7 @@ export const updateCours = async (id: number, cours: Partial<Cours>): Promise<Co
     WHERE id = $9
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const [result] = await pool.query(query, [
     cours.classe,
     cours.matiere,
     cours.professeurId,
@@ -78,7 +78,7 @@ export const updateCours = async (id: number, cours: Partial<Cours>): Promise<Co
     cours.couleur,
     id
   ]);
-  return result.rows[0];
+  return result[0];
 };
 
 export const deleteCours = async (id: number): Promise<void> => {
@@ -125,9 +125,9 @@ export const filterCours = async (filters: {
     paramIndex++;
   }
 
-  const result = await pool.query(query, params);
-  return result.rows.map(row => ({
+  const [result] = await pool.query(query, params);
+  return result.map(row => ({
     ...row,
     professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  }));
+  })) as Cours[];
 }; 

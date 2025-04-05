@@ -7,40 +7,40 @@ export const getBulletins = async (): Promise<Bulletin[]> => {
     FROM bulletins b
     JOIN eleves e ON b.eleve_id = e.id
   `;
-  const result = await pool.query(query);
-  return result.rows.map(row => ({
+  const [result] = await pool.query(query);
+  return result.map(row => ({
     ...row,
     eleveNom: row.eleve_nom,
     elevePrenom: row.eleve_prenom
-  }));
+  })) as Bulletin[];
 };
 
 export const getBulletinById = async (id: number): Promise<Bulletin | null> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     // Récupérer le bulletin
     const bulletinQuery = `
       SELECT b.*, e.nom as eleve_nom, e.prenom as eleve_prenom
       FROM bulletins b
       JOIN eleves e ON b.eleve_id = e.id
-      WHERE b.id = $1
+      WHERE b.id = ?
     `;
-    const bulletinResult = await client.query(bulletinQuery, [id]);
-    if (!bulletinResult.rows[0]) return null;
+    const [bulletinResult] = await client.query(bulletinQuery, [id]);
+    if (!bulletinResult[0]) return null;
 
     // Récupérer les matières du bulletin
     const matieresQuery = `
       SELECT *
       FROM bulletin_matieres
-      WHERE bulletin_id = $1
+      WHERE bulletin_id = ?
     `;
-    const matieresResult = await client.query(matieresQuery, [id]);
+    const [matieresResult] = await client.query(matieresQuery, [id]);
 
     return {
-      ...bulletinResult.rows[0],
-      eleveNom: bulletinResult.rows[0].eleve_nom,
-      elevePrenom: bulletinResult.rows[0].eleve_prenom,
-      matieres: matieresResult.rows
+      ...bulletinResult[0],
+      eleveNom: bulletinResult[0].eleve_nom,
+      elevePrenom: bulletinResult[0].eleve_prenom,
+      matieres: matieresResult
     };
   } finally {
     client.release();
@@ -48,7 +48,7 @@ export const getBulletinById = async (id: number): Promise<Bulletin | null> => {
 };
 
 export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bulletin> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
@@ -61,7 +61,7 @@ export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bu
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-    const bulletinResult = await client.query(bulletinQuery, [
+    const [bulletinResult] = await client.query(bulletinQuery, [
       bulletin.eleveId,
       bulletin.trimestre,
       bulletin.annee,
@@ -81,7 +81,7 @@ export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bu
         VALUES ($1, $2, $3, $4, $5, $6)
       `;
       await client.query(matiereQuery, [
-        bulletinResult.rows[0].id,
+        bulletinResult[0].id,
         matiere.matiere,
         matiere.moyenne,
         matiere.moyenneClasse,
@@ -93,7 +93,7 @@ export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bu
     await client.query('COMMIT');
 
     return {
-      ...bulletinResult.rows[0],
+      ...bulletinResult[0],
       matieres: bulletin.matieres
     };
   } catch (error) {
@@ -105,7 +105,7 @@ export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bu
 };
 
 export const updateBulletin = async (id: number, bulletin: Partial<Bulletin>): Promise<Bulletin> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
@@ -122,7 +122,7 @@ export const updateBulletin = async (id: number, bulletin: Partial<Bulletin>): P
       WHERE id = $8
       RETURNING *
     `;
-    const bulletinResult = await client.query(bulletinQuery, [
+    const [bulletinResult] = await client.query(bulletinQuery, [
       bulletin.trimestre,
       bulletin.annee,
       bulletin.moyenneGenerale,
@@ -161,7 +161,7 @@ export const updateBulletin = async (id: number, bulletin: Partial<Bulletin>): P
     await client.query('COMMIT');
 
     return {
-      ...bulletinResult.rows[0],
+      ...bulletinResult[0],
       matieres: bulletin.matieres || []
     };
   } catch (error) {
@@ -173,15 +173,15 @@ export const updateBulletin = async (id: number, bulletin: Partial<Bulletin>): P
 };
 
 export const deleteBulletin = async (id: number): Promise<void> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
     // Supprimer les matières du bulletin
-    await client.query('DELETE FROM bulletin_matieres WHERE bulletin_id = $1', [id]);
+    await client.query('DELETE FROM bulletin_matieres WHERE bulletin_id = ?', [id]);
 
     // Supprimer le bulletin
-    await client.query('DELETE FROM bulletins WHERE id = $1', [id]);
+    await client.query('DELETE FROM bulletins WHERE id = ?', [id]);
 
     await client.query('COMMIT');
   } catch (error) {
@@ -231,8 +231,8 @@ export const filterBulletins = async (filters: {
     paramIndex++;
   }
 
-  const result = await pool.query(query, params);
-  return result.rows.map(row => ({
+  const [result] = await pool.query(query, params);
+  return result.map(row => ({
     ...row,
     eleveNom: row.eleve_nom,
     elevePrenom: row.eleve_prenom

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -7,9 +6,12 @@ import { FilePlus } from 'lucide-react';
 import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Bulletin } from '@/data/bulletinsMockData';
-import { elevesMockData } from '@/data/elevesMockData';
-import { notesMockData } from '@/data/notesMockData';
+import { Bulletin, BulletinMatiere } from '@/types/bulletin';
+import { Eleve } from '@/types/eleve';
+import { Note } from '@/types/note';
+import pool from '@/config/database';
+import { getEleves } from '@/services/elevesService';
+import { getNotes } from '@/services/notesService';
 
 interface NewBulletinDialogProps {
   onAddBulletin: (bulletin: Bulletin) => void;
@@ -17,17 +19,37 @@ interface NewBulletinDialogProps {
 
 const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
   const [open, setOpen] = React.useState(false);
+  const [eleves, setEleves] = useState<Eleve[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const form = useForm({
     defaultValues: {
       eleveId: '',
-      trimestre: '1',
+      semestre: '1',
       annee: '2023-2024'
     }
   });
 
-  const handleSubmit = (data) => {
+  useEffect(() => {
+    const fetchEleves = async () => {
+      const fetchedEleves = await getEleves();
+      setEleves(fetchedEleves);
+    };
+
+    fetchEleves();
+  }, []);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const fetchedNotes = await getNotes();
+      setNotes(fetchedNotes);
+    };
+
+    fetchNotes();
+  }, []);
+  const handleSubmit = async (data) => {
     // Trouver l'élève sélectionné
-    const eleve = elevesMockData.find(e => e.id === data.eleveId);
+    const [result] = await pool.query('SELECT * FROM eleves WHERE id = ?', [data.eleveId]);
+    const eleve = result[0];
     
     if (!eleve) {
       toast.error("Élève non trouvé");
@@ -35,12 +57,11 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
     }
 
     // Récupérer les notes de l'élève pour le trimestre sélectionné
-    const notesEleve = notesMockData.filter(
-      n => n.eleveId === eleve.id && n.trimestre === parseInt(data.trimestre)
-    );
+    const [notesResult] = await pool.query('SELECT * FROM notes WHERE eleve_id = ? AND semestre = ?', [eleve.id, data.semestre]);
+    const notesEleve = notesResult as Note[];
 
-    if (notesEleve.length === 0) {
-      toast.error("Pas de notes disponibles pour cet élève ce trimestre");
+    if (!notesEleve || notesEleve.length === 0) {
+      toast.error("Pas de notes disponibles pour cet élève ce semestre");
       return;
     }
 
@@ -55,7 +76,8 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
           professeur: note.professeur
         });
       }
-      matieresMap.get(note.matiere).notes.push(note.note);
+      matieresMap.get(note.matiere).notes.push(note.note_1);
+      matieresMap.get(note.matiere).notes.push(note.note_2);
       matieresMap.get(note.matiere).coefficients.push(note.coefficient);
     });
 
@@ -80,14 +102,14 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
 
     // Créer le nouveau bulletin
     const newBulletin: Bulletin = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: Math.floor(Math.random() * 1000000),
       eleveId: eleve.id,
       eleveNom: eleve.nom,
       elevePrenom: eleve.prenom,
       classe: eleve.classe,
-      trimestre: parseInt(data.trimestre),
+      semestre: parseInt(data.semestre),
       annee: data.annee,
-      matieres: matieres,
+      matieres: matieres as BulletinMatiere[],
       moyenneGenerale: moyenneGenerale,
       moyenneClasse: 12.5, // Valeur fictive
       appreciationGenerale: "À compléter par le professeur principal",
@@ -129,8 +151,8 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {elevesMockData.map(eleve => (
-                        <SelectItem key={eleve.id} value={eleve.id}>
+                      {eleves.map(eleve => (
+                        <SelectItem key={eleve.id} value={eleve.id.toString()}>
                           {eleve.prenom} {eleve.nom} - {eleve.classe}
                         </SelectItem>
                       ))}
@@ -142,23 +164,22 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
 
             <FormField
               control={form.control}
-              name="trimestre"
+              name="semestre"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Trimestre</FormLabel>
+                  <FormLabel>Semestre</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un trimestre" />
+                        <SelectValue placeholder="Sélectionner un semestre" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="1">Trimestre 1</SelectItem>
-                      <SelectItem value="2">Trimestre 2</SelectItem>
-                      <SelectItem value="3">Trimestre 3</SelectItem>
+                      <SelectItem value="1">Semestre 1</SelectItem>
+                      <SelectItem value="2">Semestre 2</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>

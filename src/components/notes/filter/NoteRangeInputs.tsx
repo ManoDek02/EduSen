@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface NoteRangeInputsProps {
   noteRange: { min?: number; max?: number };
@@ -17,7 +18,7 @@ const NoteRangeInputs: React.FC<NoteRangeInputsProps> = ({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="min-note" className="w-12">Min:</Label>
-          <input
+          <Input
             type="number"
             id="min-note"
             min="0"
@@ -33,7 +34,7 @@ const NoteRangeInputs: React.FC<NoteRangeInputsProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <Label htmlFor="max-note" className="w-12">Max:</Label>
-          <input
+          <Input
             type="number"
             id="max-note"
             min="0"

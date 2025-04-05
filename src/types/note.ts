@@ -2,10 +2,15 @@ export interface Note {
   id: number;
   eleveId: number;
   professeurId: number;
+  professeur: string;
+  classe: string;
+  eleveNom: string;
+  elevePrenom: string;
   matiere: string;
-  note: number;
+  note_1: number;
+  note_2: number;
   coefficient: number;
-  trimestre: number;
+  semestre: number;
   dateEvaluation: string;
   commentaire?: string;
   type: string;

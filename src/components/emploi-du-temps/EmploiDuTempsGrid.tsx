@@ -29,8 +29,8 @@ interface EmploiDuTempsGridProps {
   onViewDetails: (cours: Cours) => void;
 }
 
-const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-const HEURES = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const HEURES = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
 
 export const EmploiDuTempsGrid = ({ cours, onEdit, onDelete, onViewDetails }: EmploiDuTempsGridProps) => {
   const [selectedClasse, setSelectedClasse] = useState<string>("");

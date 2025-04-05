@@ -19,7 +19,7 @@ const generateNotes = (eleveId: string, eleveNom: string, elevePrenom: string, c
     // Première note (Contrôle)
     notes.push({
       id: `${eleveId}-${matiere}-${trimestre}-1`,
-      eleveId,
+      eleveId: parseInt(eleveId),
       eleveNom,
       elevePrenom,
       classe,
@@ -36,7 +36,7 @@ const generateNotes = (eleveId: string, eleveNom: string, elevePrenom: string, c
     // Deuxième note (DS)
     notes.push({
       id: `${eleveId}-${matiere}-${trimestre}-2`,
-      eleveId,
+      eleveId: parseInt(eleveId),
       eleveNom,
       elevePrenom,
       classe,

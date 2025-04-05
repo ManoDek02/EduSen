@@ -25,8 +25,8 @@ interface EditCoursDialogProps {
   onSave: (cours: Cours) => void;
 }
 
-const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-const HEURES = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const HEURES = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
 const MATIERES = [
   "Mathématiques",
   "Physique-Chimie",
@@ -41,7 +41,13 @@ const MATIERES = [
   "EPS",
   "SES",
   "NSI",
-  "Philosophie"
+  "Philosophie",
+  "Informatique",
+  "Mathématiques",
+  "Physique-Chimie",
+  "SVT",
+  "Histoire-Géographie",
+  "Français",
 ];
 
 const CLASSES = ["3ème A", "3ème B", "4ème A", "4ème B"];

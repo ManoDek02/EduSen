@@ -59,10 +59,12 @@ export const ImportNotesDialog = ({ onImportNotes, selectedClass, selectedMatier
             elevePrenom: row['Prénom'],
             classe: selectedClass,
             matiere: selectedMatiere,
-            note: parseFloat(row['Note']),
+            note_1: parseFloat(row['Note 1']),
+            note_2: parseFloat(row['Note 2']),
             coefficient: parseFloat(row['Coefficient']) || 1,
-            professeur: professeurConnecte.id,
-            trimestre: parseInt(row['Trimestre']) || 1,
+            professeurId: professeurConnecte.id,
+            professeur: professeurConnecte.nom,
+            semestre: parseInt(row['Semestre']) || 1,
             dateEvaluation: row['Date'] || new Date().toISOString().split('T')[0],
             commentaire: row['Commentaire'] || '',
             type: row['Type'] || 'Contrôle'
@@ -70,7 +72,8 @@ export const ImportNotesDialog = ({ onImportNotes, selectedClass, selectedMatier
 
           // Validation des notes
           const invalidNotes = notes.filter(note => 
-            note.note < 0 || note.note > 20 || 
+            note.note_1 < 0 || note.note_1 > 20 || 
+            note.note_2 < 0 || note.note_2 > 20 || 
             !note.eleveNom || !note.elevePrenom
           );
 
@@ -141,7 +144,7 @@ export const ImportNotesDialog = ({ onImportNotes, selectedClass, selectedMatier
                   <li>Prénom</li>
                   <li>Note (sur 20)</li>
                   <li>Coefficient (optionnel, par défaut: 1)</li>
-                  <li>Trimestre (optionnel, par défaut: 1)</li>
+                  <li>Semestre (optionnel, par défaut: 1)</li>
                   <li>Date (optionnel, format: YYYY-MM-DD)</li>
                   <li>Type (optionnel, par défaut: Contrôle)</li>
                   <li>Commentaire (optionnel)</li>

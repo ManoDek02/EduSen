@@ -34,7 +34,7 @@ const coursMockData: Cours[] = [
     id: '1',
     classe: 'TS1',
     matiere: 'Mathématiques',
-    professeur: professeurConnecte.id,
+    professeur: professeurConnecte.id.toString(),
     salle: 'S-102',
     jour: 0,
     debut: 0,
@@ -45,7 +45,7 @@ const coursMockData: Cours[] = [
     id: '2',
     classe: 'TS2',
     matiere: 'Mathématiques',
-    professeur: professeurConnecte.id,
+    professeur: professeurConnecte.id.toString(),
     salle: 'S-102',
     jour: 1,
     debut: 1,
@@ -119,7 +119,7 @@ const EmploiDuTempsProf = () => {
   const coursProfesseur = useMemo(() => {
     return coursMockData.filter(cours => {
       // Vérifier que le cours appartient au professeur
-      if (cours.professeur !== professeurConnecte.id) return false;
+      if (cours.professeur !== professeurConnecte.id.toString()) return false;
       
       // Vérifier que la classe est assignée au professeur
       const classe = professeurConnecte.classes.find(c => c.id === cours.classe);

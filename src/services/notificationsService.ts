@@ -8,14 +8,17 @@ export const getNotifications = async (userId: number): Promise<Notification[]> 
     WHERE user_id = $1
     ORDER BY created_at DESC
   `;
-  const result = await pool.query(query, [userId]);
-  return result.rows;
+  const [result] = await pool.query(query, [userId]);
+  return result.map(row => ({
+    ...row,
+    createdAt: row.created_at
+  })) as Notification[];
 };
 
 export const getNotificationById = async (id: number): Promise<Notification | null> => {
   const query = 'SELECT * FROM notifications WHERE id = $1';
-  const result = await pool.query(query, [id]);
-  return result.rows[0] || null;
+  const [result] = await pool.query(query, [id]);
+  return result[0] || null;
 };
 
 export const createNotification = async (notification: Omit<Notification, 'id'>): Promise<Notification> => {
@@ -26,14 +29,14 @@ export const createNotification = async (notification: Omit<Notification, 'id'>)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const [result] = await pool.query(query, [
     notification.userId,
     notification.title,
     notification.message,
     notification.type,
     notification.isRead
   ]);
-  return result.rows[0];
+  return result[0];
 };
 
 export const updateNotification = async (id: number, notification: Partial<Notification>): Promise<Notification> => {
@@ -46,14 +49,14 @@ export const updateNotification = async (id: number, notification: Partial<Notif
     WHERE id = $5
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const [result] = await pool.query(query, [
     notification.title,
     notification.message,
     notification.type,
     notification.isRead,
     id
   ]);
-  return result.rows[0];
+  return result[0];
 };
 
 export const deleteNotification = async (id: number): Promise<void> => {
@@ -73,8 +76,8 @@ export const markAllAsRead = async (userId: number): Promise<void> => {
 
 export const getUnreadCount = async (userId: number): Promise<number> => {
   const query = 'SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = false';
-  const result = await pool.query(query, [userId]);
-  return parseInt(result.rows[0].count);
+  const [result] = await pool.query(query, [userId]);
+  return parseInt(result[0].count);
 };
 
 export const filterNotifications = async (filters: {
@@ -118,6 +121,9 @@ export const filterNotifications = async (filters: {
 
   query += ' ORDER BY created_at DESC';
 
-  const result = await pool.query(query, params);
-  return result.rows;
+  const [result] = await pool.query(query, params);
+  return result.map(row => ({
+    ...row,
+    createdAt: row.created_at
+  })) as Notification[];
 }; 

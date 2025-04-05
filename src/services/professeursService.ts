@@ -7,8 +7,11 @@ export const getProfesseurs = async (): Promise<Professeur[]> => {
     FROM professeurs p
     JOIN users u ON p.user_id = u.id
   `;
-  const result = await pool.query(query);
-  return result.rows;
+  const [result] = await pool.query(query);
+  return result.map(row => ({
+    ...row,
+    // Vous pouvez ajouter d'autres transformations si nécessaire
+  })) as Professeur[];
 };
 
 export const getProfesseurById = async (id: number): Promise<Professeur | null> => {
@@ -18,8 +21,8 @@ export const getProfesseurById = async (id: number): Promise<Professeur | null> 
     JOIN users u ON p.user_id = u.id
     WHERE p.id = $1
   `;
-  const result = await pool.query(query, [id]);
-  return result.rows[0] || null;
+  const [result] = await pool.query(query, [id]);
+  return result[0] || null;
 };
 
 export const createProfesseur = async (professeur: Omit<Professeur, 'id'>): Promise<Professeur> => {
@@ -33,7 +36,7 @@ export const createProfesseur = async (professeur: Omit<Professeur, 'id'>): Prom
       VALUES ($1, $2, $3, $4, 'professeur', $5)
       RETURNING id
     `;
-    const userResult = await client.query(userQuery, [
+    const [userResult] = await client.query(userQuery, [
       professeur.matricule,
       professeur.email,
       professeur.nom,
@@ -47,8 +50,8 @@ export const createProfesseur = async (professeur: Omit<Professeur, 'id'>): Prom
       VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
-    const professeurResult = await client.query(professeurQuery, [
-      userResult.rows[0].id,
+    const [professeurResult] = await client.query(professeurQuery, [
+      userResult[0].id,
       professeur.matiere,
       professeur.telephone,
       professeur.status
@@ -57,7 +60,7 @@ export const createProfesseur = async (professeur: Omit<Professeur, 'id'>): Prom
     await client.query('COMMIT');
 
     return {
-      ...professeurResult.rows[0],
+      ...professeurResult[0],
       nom: professeur.nom,
       prenom: professeur.prenom,
       email: professeur.email
@@ -102,7 +105,7 @@ export const updateProfesseur = async (id: number, professeur: Partial<Professeu
       WHERE id = $4
       RETURNING *
     `;
-    const result = await client.query(professeurQuery, [
+    const [result] = await client.query(professeurQuery, [
       professeur.matiere,
       professeur.telephone,
       professeur.status,
@@ -111,7 +114,7 @@ export const updateProfesseur = async (id: number, professeur: Partial<Professeu
 
     await client.query('COMMIT');
 
-    return result.rows[0];
+    return result[0];
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -178,6 +181,9 @@ export const filterProfesseurs = async (filters: {
     params.push(`%${filters.searchTerm}%`);
   }
 
-  const result = await pool.query(query, params);
-  return result.rows;
+  const [result] = await pool.query(query, params);
+  return result.map(row => ({
+    ...row,
+    // Vous pouvez ajouter d'autres transformations si nécessaire
+  })) as Professeur[];
 }; 

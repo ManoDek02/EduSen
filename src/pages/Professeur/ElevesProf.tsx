@@ -51,8 +51,8 @@ const ElevesProf = () => {
       setLoading(true);
       const data = await filterEleves({ 
         classe: selectedClass,
-        terme: searchTerm,
-        statut: filters.status
+        searchTerm: searchTerm,
+        status: filters.status
       });
       setFilteredEleves(data);
     } catch (error) {
@@ -69,8 +69,8 @@ const ElevesProf = () => {
       setLoading(true);
       const data = await filterEleves({ 
         classe: selectedClass,
-        terme: term,
-        statut: activeFilters.status
+        searchTerm: term,
+        status: activeFilters.status
       });
       setFilteredEleves(data);
     } catch (error) {

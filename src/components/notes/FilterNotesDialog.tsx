@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Filter } from "lucide-react";
 
 interface NoteFilters {
-  trimestre?: number;
+  semestre?: number;
   matiere?: string;
   classe?: string;
   typesEvaluation?: string[];
@@ -30,7 +30,13 @@ const MATIERES = [
   "Français",
   "Anglais",
   "Espagnol",
-  "Allemand"
+  "Allemand",
+  "Philosophie",
+  "NSI",
+  "SES",
+  "EPS",
+  "Arts Plastiques",
+  "Musique"
 ];
 
 const CLASSES = [
@@ -54,7 +60,7 @@ const TYPES_EVALUATION = [
 export const FilterNotesDialog = ({ onApplyFilters }: FilterNotesDialogProps) => {
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<NoteFilters>({
-    trimestre: undefined,
+    semestre: undefined,
     matiere: undefined,
     classe: undefined,
     typesEvaluation: [],
@@ -71,7 +77,7 @@ export const FilterNotesDialog = ({ onApplyFilters }: FilterNotesDialogProps) =>
 
   const handleReset = () => {
     setFilters({
-      trimestre: undefined,
+      semestre: undefined,
       matiere: undefined,
       classe: undefined,
       typesEvaluation: [],
@@ -115,18 +121,17 @@ export const FilterNotesDialog = ({ onApplyFilters }: FilterNotesDialogProps) =>
             </div>
 
             <div className="space-y-2">
-              <Label>Trimestre</Label>
+              <Label>Semestre</Label>
               <Select
-                value={filters.trimestre?.toString()}
-                onValueChange={(value) => setFilters({ ...filters, trimestre: parseInt(value) })}
+                value={filters.semestre?.toString()}
+                onValueChange={(value) => setFilters({ ...filters, semestre: parseInt(value) })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un trimestre" />
+                  <SelectValue placeholder="Sélectionner un semestre" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Trimestre 1</SelectItem>
-                  <SelectItem value="2">Trimestre 2</SelectItem>
-                  <SelectItem value="3">Trimestre 3</SelectItem>
+                  <SelectItem value="1">Semestre 1</SelectItem>
+                  <SelectItem value="2">Semestre 2</SelectItem>
                 </SelectContent>
               </Select>
             </div>

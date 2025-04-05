@@ -1,3 +1,4 @@
+import { Pool } from 'mysql2/promise';
 import pool from '@/config/database';
 import { Eleve } from '@/types/eleve';
 
@@ -7,8 +8,8 @@ export const getEleves = async (): Promise<Eleve[]> => {
     FROM eleves e
     JOIN users u ON e.user_id = u.id
   `;
-  const result = await pool.query(query);
-  return result.rows;
+  const [result] = await pool.query(query);
+  return result as Eleve[];
 };
 
 export const getEleveById = async (id: number): Promise<Eleve | null> => {
@@ -16,24 +17,24 @@ export const getEleveById = async (id: number): Promise<Eleve | null> => {
     SELECT e.*, u.nom, u.prenom, u.email
     FROM eleves e
     JOIN users u ON e.user_id = u.id
-    WHERE e.id = $1
+    WHERE e.id = ?
   `;
-  const result = await pool.query(query, [id]);
-  return result.rows[0] || null;
+  const [result] = await pool.query(query, [id]);
+  return result[0] as Eleve || null;
 };
 
 export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
     // Créer l'utilisateur
     const userQuery = `
       INSERT INTO users (matricule, email, nom, prenom, role, password_hash)
-      VALUES ($1, $2, $3, $4, 'eleve', $5)
+      VALUES (?, ?, ?, ?, 'eleve', ?)
       RETURNING id
     `;
-    const userResult = await client.query(userQuery, [
+    const [userResult] = await client.query(userQuery, [
       eleve.matricule,
       eleve.email,
       eleve.nom,
@@ -44,11 +45,11 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
     // Créer l'élève
     const eleveQuery = `
       INSERT INTO eleves (user_id, classe, date_naissance, responsable, status)
-      VALUES ($1, $2, $3, $4, $5)
+      VALUES (?, ?, ?, ?, ?)
       RETURNING *
     `;
-    const eleveResult = await client.query(eleveQuery, [
-      userResult.rows[0].id,
+    const [eleveResult] = await client.query(eleveQuery, [
+      userResult[0].id,
       eleve.classe,
       eleve.dateNaissance,
       eleve.responsable,
@@ -58,7 +59,7 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
     await client.query('COMMIT');
 
     return {
-      ...eleveResult.rows[0],
+      ...eleveResult[0],
       nom: eleve.nom,
       prenom: eleve.prenom,
       email: eleve.email
@@ -72,7 +73,7 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
 };
 
 export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<Eleve> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
@@ -80,11 +81,11 @@ export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<El
     if (eleve.nom || eleve.prenom || eleve.email) {
       const userQuery = `
         UPDATE users
-        SET nom = COALESCE($1, nom),
-            prenom = COALESCE($2, prenom),
-            email = COALESCE($3, email)
+        SET nom = COALESCE(?, nom),
+            prenom = COALESCE(?, prenom),
+            email = COALESCE(?, email)
         FROM eleves
-        WHERE users.id = eleves.user_id AND eleves.id = $4
+        WHERE users.id = eleves.user_id AND eleves.id = ?
       `;
       await client.query(userQuery, [
         eleve.nom,
@@ -97,14 +98,14 @@ export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<El
     // Mettre à jour l'élève
     const eleveQuery = `
       UPDATE eleves
-      SET classe = COALESCE($1, classe),
-          date_naissance = COALESCE($2, date_naissance),
-          responsable = COALESCE($3, responsable),
-          status = COALESCE($4, status)
-      WHERE id = $5
+      SET classe = COALESCE(?, classe),
+          date_naissance = COALESCE(?, date_naissance),
+          responsable = COALESCE(?, responsable),
+          status = COALESCE(?, status)
+      WHERE id = ?
       RETURNING *
     `;
-    const result = await client.query(eleveQuery, [
+    const [result] = await client.query(eleveQuery, [
       eleve.classe,
       eleve.dateNaissance,
       eleve.responsable,
@@ -114,7 +115,7 @@ export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<El
 
     await client.query('COMMIT');
 
-    return result.rows[0];
+    return result[0];
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -124,17 +125,17 @@ export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<El
 };
 
 export const deleteEleve = async (id: number): Promise<void> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
     // Supprimer l'élève
-    const eleveQuery = 'DELETE FROM eleves WHERE id = $1 RETURNING user_id';
-    const result = await client.query(eleveQuery, [id]);
+    const eleveQuery = 'DELETE FROM eleves WHERE id = ? RETURNING user_id';
+    const [result] = await client.query(eleveQuery, [id]);
 
     // Supprimer l'utilisateur associé
-    if (result.rows[0]) {
-      await client.query('DELETE FROM users WHERE id = $1', [result.rows[0].user_id]);
+    if (result[0]) {
+      await client.query('DELETE FROM users WHERE id = ?', [result[0].user_id]);
     }
 
     await client.query('COMMIT');
@@ -181,6 +182,6 @@ export const filterEleves = async (filters: {
     params.push(`%${filters.searchTerm}%`);
   }
 
-  const result = await pool.query(query, params);
-  return result.rows;
+  const [result] = await pool.query(query, params);
+  return result as Eleve[];
 };

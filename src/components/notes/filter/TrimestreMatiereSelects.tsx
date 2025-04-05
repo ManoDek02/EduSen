@@ -10,16 +10,16 @@ import {
 } from '@/components/ui/select';
 
 interface TrimestreMatiereSelectsProps {
-  trimestre: string;
-  setTrimestre: (value: string) => void;
+  semestre: string;
+  setSemestre: (value: string) => void;
   matiere: string;
   setMatiere: (value: string) => void;
   matieres: string[];
 }
 
 const TrimestreMatiereSelects: React.FC<TrimestreMatiereSelectsProps> = ({
-  trimestre,
-  setTrimestre,
+  semestre,
+  setSemestre,
   matiere,
   setMatiere,
   matieres,
@@ -27,19 +27,18 @@ const TrimestreMatiereSelects: React.FC<TrimestreMatiereSelectsProps> = ({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="trimestre">Trimestre</Label>
+        <Label htmlFor="semestre">Semestre</Label>
         <Select 
-          value={trimestre} 
-          onValueChange={setTrimestre}
+          value={semestre} 
+          onValueChange={setSemestre}
         >
-          <SelectTrigger id="trimestre">
-            <SelectValue placeholder="Tous les trimestres" />
+          <SelectTrigger id="semestre">
+            <SelectValue placeholder="Tous les semestres" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous les trimestres</SelectItem>
-            <SelectItem value="1">Trimestre 1</SelectItem>
-            <SelectItem value="2">Trimestre 2</SelectItem>
-            <SelectItem value="3">Trimestre 3</SelectItem>
+            <SelectItem value="">Tous les semestres</SelectItem>
+            <SelectItem value="1">Semestre 1</SelectItem>
+            <SelectItem value="2">Semestre 2</SelectItem>
           </SelectContent>
         </Select>
       </div>

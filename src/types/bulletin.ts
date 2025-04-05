@@ -1,6 +1,7 @@
 export interface BulletinMatiere {
   id: number;
   bulletin_id: number;
+  classe: string;
   matiere: string;
   moyenne: number;
   moyenneClasse: number;
@@ -15,7 +16,8 @@ export interface Bulletin {
   eleveId: number;
   eleveNom: string;
   elevePrenom: string;
-  trimestre: number;
+  classe: string;
+  semestre: number;
   annee: string;
   matieres: BulletinMatiere[];
   moyenneGenerale: number;

@@ -1,17 +1,23 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Printer, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { Bulletin } from '@/data/bulletinsMockData';
+import { Bulletin } from '@/types/bulletin';
 import BulletinTemplate from './BulletinTemplate';
+import pool from '@/config/database';
 
 interface BulletinDetailDialogProps {
   bulletin: Bulletin;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+export const getBulletinById = async (id: number): Promise<Bulletin | null> => {
+  const query = 'SELECT * FROM bulletins WHERE id = $1';
+  const [result] = await pool.query(query, [id]);
+  return result[0] || null; // Retourne le bulletin ou null
+};
 
 const BulletinDetailDialog = ({ bulletin, open, onOpenChange }: BulletinDetailDialogProps) => {
   const [printMode, setPrintMode] = useState(false);

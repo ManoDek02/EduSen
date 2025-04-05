@@ -39,15 +39,16 @@ const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote, selectedClass,
   const handleSubmit = (values: NoteFormValues) => {
     const newNote: Note = {
       id: Math.random().toString(36).substr(2, 9),
-      eleveId: values.eleveId,
+      eleveId: parseInt(values.eleveId || '0'),
       eleveNom: elevesMockData.find(e => e.id === values.eleveId)?.nom || '',
       elevePrenom: elevesMockData.find(e => e.id === values.eleveId)?.prenom || '',
       classe: selectedClass,
       matiere: values.matiere,
-      note: values.note,
+      note_1: values.note_1,
+      note_2: values.note_2,
       coefficient: values.coefficient,
       professeur: "Mme Dubois", // À remplacer par le nom du professeur connecté
-      trimestre: values.trimestre,
+      semestre: values.semestre,
       dateEvaluation: values.dateEvaluation,
       commentaire: values.commentaire,
       type: values.type

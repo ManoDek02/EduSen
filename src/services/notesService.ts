@@ -1,3 +1,4 @@
+import { Pool } from 'mysql2/promise';
 import pool from '@/config/database';
 import { Note } from '@/types/note';
 
@@ -8,13 +9,8 @@ export const getNotes = async (): Promise<Note[]> => {
     JOIN eleves e ON n.eleve_id = e.id
     JOIN professeurs p ON n.professeur_id = p.id
   `;
-  const result = await pool.query(query);
-  return result.rows.map(row => ({
-    ...row,
-    eleveNom: row.eleve_nom,
-    elevePrenom: row.eleve_prenom,
-    professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  }));
+  const [result] = await pool.query(query);
+  return result as Note[];
 };
 
 export const getNoteById = async (id: number): Promise<Note | null> => {
@@ -25,10 +21,10 @@ export const getNoteById = async (id: number): Promise<Note | null> => {
     JOIN professeurs p ON n.professeur_id = p.id
     WHERE n.id = $1
   `;
-  const result = await pool.query(query, [id]);
-  if (!result.rows[0]) return null;
+  const [result] = await pool.query(query, [id]);
+  if (!result[0]) return null;
   
-  const row = result.rows[0];
+  const row = result[0];
   return {
     ...row,
     eleveNom: row.eleve_nom,
@@ -46,18 +42,18 @@ export const createNote = async (note: Omit<Note, 'id'>): Promise<Note> => {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const [result] = await pool.query(query, [
     note.eleveId,
     note.professeurId,
     note.matiere,
-    note.note,
-    note.coefficient,
-    note.trimestre,
+    note.note_1,
+    note.note_2,
+    note.semestre,
     note.dateEvaluation,
     note.commentaire,
     note.type
   ]);
-  return result.rows[0];
+  return result[0];
 };
 
 export const updateNote = async (id: number, note: Partial<Note>): Promise<Note> => {
@@ -73,17 +69,17 @@ export const updateNote = async (id: number, note: Partial<Note>): Promise<Note>
     WHERE id = $8
     RETURNING *
   `;
-  const result = await pool.query(query, [
+  const [result] = await pool.query(query, [
     note.matiere,
-    note.note,
-    note.coefficient,
-    note.trimestre,
+    note.note_1,
+    note.note_2,
+    note.semestre,
     note.dateEvaluation,
     note.commentaire,
     note.type,
     id
   ]);
-  return result.rows[0];
+  return result[0];
 };
 
 export const deleteNote = async (id: number): Promise<void> => {
@@ -145,11 +141,6 @@ export const filterNotes = async (filters: {
     paramIndex++;
   }
 
-  const result = await pool.query(query, params);
-  return result.rows.map(row => ({
-    ...row,
-    eleveNom: row.eleve_nom,
-    elevePrenom: row.eleve_prenom,
-    professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  }));
+  const [result] = await pool.query(query, params);
+  return result as Note[];
 }; 

@@ -8,7 +8,7 @@ export const noteFormSchema = z.object({
   note: z.coerce.number().min(0, { message: 'La note doit être positive' }).max(20, { message: 'La note ne peut pas dépasser 20' }),
   coefficient: z.coerce.number().min(1, { message: 'Le coefficient minimum est 1' }),
   professeur: z.string().min(1, { message: 'Veuillez saisir un professeur' }),
-  trimestre: z.coerce.number().min(1, { message: 'Veuillez sélectionner un trimestre' }).max(3, { message: 'Trimestre invalide' }),
+  semestre: z.coerce.number().min(1, { message: 'Veuillez sélectionner un semestre' }).max(2, { message: 'Semestre invalide' }),
   dateEvaluation: z.string().min(1, { message: 'Veuillez saisir une date d\'évaluation' }),
   commentaire: z.string().optional(),
   type: z.string().min(1, { message: 'Veuillez sélectionner un type d\'évaluation' }),

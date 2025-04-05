@@ -15,7 +15,7 @@ interface Note {
   note: number;
   coefficient: number;
   professeur: string;
-  trimestre: number;
+  semestre: number;
   dateEvaluation: string;
   commentaire: string;
   type: string;
