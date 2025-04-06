@@ -8,7 +8,7 @@ export const getProfesseurs = async (): Promise<Professeur[]> => {
     JOIN users u ON p.user_id = u.id
   `;
   const [result] = await pool.query(query);
-  return result.map(row => ({
+  return (result as any[]).map(row => ({
     ...row,
     // Vous pouvez ajouter d'autres transformations si nécessaire
   })) as Professeur[];
@@ -26,7 +26,7 @@ export const getProfesseurById = async (id: number): Promise<Professeur | null> 
 };
 
 export const createProfesseur = async (professeur: Omit<Professeur, 'id'>): Promise<Professeur> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
@@ -74,7 +74,7 @@ export const createProfesseur = async (professeur: Omit<Professeur, 'id'>): Prom
 };
 
 export const updateProfesseur = async (id: number, professeur: Partial<Professeur>): Promise<Professeur> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
@@ -124,17 +124,17 @@ export const updateProfesseur = async (id: number, professeur: Partial<Professeu
 };
 
 export const deleteProfesseur = async (id: number): Promise<void> => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
     // Supprimer le professeur
     const professeurQuery = 'DELETE FROM professeurs WHERE id = $1 RETURNING user_id';
-    const result = await client.query(professeurQuery, [id]);
+    const [result] = await client.query(professeurQuery, [id]);
 
     // Supprimer l'utilisateur associé
-    if (result.rows[0]) {
-      await client.query('DELETE FROM users WHERE id = $1', [result.rows[0].user_id]);
+    if (result[0]) {
+      await client.query('DELETE FROM users WHERE id = $1', [result[0].user_id]);
     }
 
     await client.query('COMMIT');
@@ -182,7 +182,7 @@ export const filterProfesseurs = async (filters: {
   }
 
   const [result] = await pool.query(query, params);
-  return result.map(row => ({
+  return (result as any[]).map(row => ({
     ...row,
     // Vous pouvez ajouter d'autres transformations si nécessaire
   })) as Professeur[];

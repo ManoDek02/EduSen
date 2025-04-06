@@ -8,7 +8,7 @@ export const getBulletins = async (): Promise<Bulletin[]> => {
     JOIN eleves e ON b.eleve_id = e.id
   `;
   const [result] = await pool.query(query);
-  return result.map(row => ({
+  return (result as any[]).map(row => ({
     ...row,
     eleveNom: row.eleve_nom,
     elevePrenom: row.eleve_prenom
@@ -63,7 +63,7 @@ export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bu
     `;
     const [bulletinResult] = await client.query(bulletinQuery, [
       bulletin.eleveId,
-      bulletin.trimestre,
+      bulletin.semestre,
       bulletin.annee,
       bulletin.moyenneGenerale,
       bulletin.moyenneClasse,
@@ -123,7 +123,7 @@ export const updateBulletin = async (id: number, bulletin: Partial<Bulletin>): P
       RETURNING *
     `;
     const [bulletinResult] = await client.query(bulletinQuery, [
-      bulletin.trimestre,
+      bulletin.semestre,
       bulletin.annee,
       bulletin.moyenneGenerale,
       bulletin.moyenneClasse,
@@ -232,7 +232,7 @@ export const filterBulletins = async (filters: {
   }
 
   const [result] = await pool.query(query, params);
-  return result.map(row => ({
+  return (result as any[]).map(row => ({
     ...row,
     eleveNom: row.eleve_nom,
     elevePrenom: row.eleve_prenom

@@ -5,8 +5,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import DataTable from '@/components/tables/DataTable';
-import { getNotesColumns } from '@/components/notes/NotesTableColumns';
-import { notesMockData } from '@/data/notesMockData';
 import NewNoteDialog from '@/components/notes/NewNoteDialog';
 import FilterNotesDialog from '@/components/notes/FilterNotesDialog';
 import { Button } from '@/components/ui/button';
@@ -19,31 +17,16 @@ import 'jspdf-autotable';
 import type { jsPDF as JSPDFType } from 'jspdf';
 import { professeurConnecte } from '@/types/professeur';
 import ImportNotesDialog from '@/components/notes/ImportNotesDialog';
-
-interface Note {
-  id: string;
-  eleveId: string;
-  eleveNom: string;
-  elevePrenom: string;
-  classe: string;
-  matiere: string;
-  note: number;
-  coefficient: number;
-  professeur: string;
-  trimestre: number;
-  dateEvaluation: string;
-  commentaire: string;
-  type: string;
-}
+import { Note } from '@/types/note';
 
 interface NoteGrouped {
-  eleveId: string;
+  eleveId: number;
   eleveNom: string;
   elevePrenom: string;
   classe: string;
   matiere: string;
-  note1: Note | null;
-  note2: Note | null;
+  note_1: Note | null;
+  note_2: Note | null;
   moyenne: number;
 }
 
@@ -58,8 +41,8 @@ const adaptColumns = (columns) => {
 
 const Notes = () => {
   const navigate = useNavigate();
-  const [notes, setNotes] = useState<Note[]>(notesMockData);
-  const [filteredNotes, setFilteredNotes] = useState<Note[]>(notesMockData);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -70,7 +53,7 @@ const Notes = () => {
   // Filtrer les notes pour ne garder que celles des classes assignées au professeur
   const professeurNotes = useMemo(() => {
     return notes.filter(note => {
-      const classe = professeurConnecte.classes.find(c => c.id === note.classe);
+      const classe = Array.isArray(professeurConnecte.classe) ? professeurConnecte.classe.find(c => c.id === note.classe) : null;
       return classe && classe.matieres.includes(note.matiere);
     });
   }, [notes]);
@@ -81,7 +64,7 @@ const Notes = () => {
   // Obtenir les matières disponibles pour la classe sélectionnée
   const matieresDisponibles = useMemo(() => {
     if (!selectedClass) return [];
-    const classe = professeurConnecte.classes.find(c => c.id === selectedClass);
+    const classe = Array.isArray(professeurConnecte.classe) ? professeurConnecte.classe.find(c => c.id === selectedClass) : null;
     return classe ? classe.matieres : [];
   }, [selectedClass]);
 
@@ -96,16 +79,16 @@ const Notes = () => {
           elevePrenom: note.elevePrenom,
           classe: note.classe,
           matiere: note.matiere,
-          note1: null,
-          note2: null,
+          note_1: null,
+          note_2: null,
           moyenne: 0
         };
       }
 
-      if (!acc[key].note1) {
-        acc[key].note1 = note;
+      if (!acc[key].note_1) {
+        acc[key].note_1 = note;
       } else {
-        acc[key].note2 = note;
+        acc[key].note_2 = note;
       }
 
       return acc;
@@ -113,9 +96,9 @@ const Notes = () => {
 
     // Calculer les moyennes
     return Object.values(grouped).map(group => {
-      if (group.note1 && group.note2) {
-        const totalCoeff = group.note1.coefficient + group.note2.coefficient;
-        const moyenne = (group.note1.note * group.note1.coefficient + group.note2.note * group.note2.coefficient) / totalCoeff;
+      if (group.note_1 && group.note_2) {
+        const totalCoeff = group.note_1.coefficient + group.note_2.coefficient;
+        const moyenne = (group.note_1.note_1 * group.note_1.coefficient + group.note_2.note_2 * group.note_2.coefficient) / totalCoeff;
         return { ...group, moyenne };
       }
       return group;
@@ -148,7 +131,7 @@ const Notes = () => {
     }
 
     // Vérifier que la matière est bien enseignée par le professeur dans cette classe
-    const classe = professeurConnecte.classes.find(c => c.id === newNote.classe);
+    const classe = Array.isArray(professeurConnecte.classe) ? professeurConnecte.classe.find(c => c.id === selectedClass) : null;
     if (!classe || !classe.matieres.includes(newNote.matiere)) {
       toast.error("Vous n'êtes pas autorisé à ajouter une note dans cette matière pour cette classe");
       return;
@@ -215,7 +198,7 @@ const Notes = () => {
     }
 
     if (filters.trimestre) {
-      result = result.filter(note => note.trimestre === filters.trimestre);
+      result = result.filter(note => note.semestre === filters.trimestre);
     }
 
     if (filters.typesEvaluation && filters.typesEvaluation.length > 0) {
@@ -224,10 +207,17 @@ const Notes = () => {
 
     if (filters.noteRange) {
       if (filters.noteRange.min !== undefined) {
-        result = result.filter(note => note.note >= filters.noteRange.min);
+        result = result.filter(note => note.note_1 >= filters.noteRange.min);
       }
       if (filters.noteRange.max !== undefined) {
-        result = result.filter(note => note.note <= filters.noteRange.max);
+        result = result.filter(note => note.note_1 <= filters.noteRange.max);
+      }
+
+      if (filters.noteRange.min !== undefined) {
+        result = result.filter(note => note.note_2 >= filters.noteRange.min);
+      }
+      if (filters.noteRange.max !== undefined) {
+        result = result.filter(note => note.note_2 <= filters.noteRange.max);
       }
     }
 
@@ -256,8 +246,8 @@ const Notes = () => {
       'Prénom': group.elevePrenom,
       'Classe': group.classe,
       'Matière': group.matiere,
-      'Note 1': group.note1 ? `${group.note1.note} (${group.note1.type})` : '-',
-      'Note 2': group.note2 ? `${group.note2.note} (${group.note2.type})` : '-',
+      'Note 1': group.note_1 ? `${group.note_1.note_1} (${group.note_1.type})` : '-',
+      'Note 2': group.note_2 ? `${group.note_2.note_2} (${group.note_2.type})` : '-',
       'Moyenne': group.moyenne.toFixed(2)
     }));
 
@@ -327,20 +317,20 @@ const Notes = () => {
     {
       key: 'note1',
       header: 'Note 1',
-      cell: (row: NoteGrouped) => row.note1 ? (
+      cell: (row: NoteGrouped) => row.note_1 ? (
         <div>
-          <div className="font-medium">{row.note1.note}/20</div>
-          <div className="text-sm text-gray-500">{row.note1.type}</div>
+          <div className="font-medium">{row.note_1.note_1}/20</div>
+          <div className="text-sm text-gray-500">{row.note_1.type}</div>
         </div>
       ) : '-'
     },
     {
       key: 'note2',
       header: 'Note 2',
-      cell: (row: NoteGrouped) => row.note2 ? (
+      cell: (row: NoteGrouped) => row.note_2 ? (
         <div>
-          <div className="font-medium">{row.note2.note}/20</div>
-          <div className="text-sm text-gray-500">{row.note2.type}</div>
+          <div className="font-medium">{row.note_2.note_2}/20</div>
+          <div className="text-sm text-gray-500">{row.note_2.type}</div>
         </div>
       ) : '-'
     },
@@ -361,7 +351,7 @@ const Notes = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => handleEditNote(row.note1!)} 
+                onClick={() => handleEditNote(row.note_1!)} 
                 className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
               >
                 Modifier Note 1
@@ -369,7 +359,7 @@ const Notes = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => handleDeleteNote(row.note1!)} 
+                onClick={() => handleDeleteNote(row.note_1!)} 
                 className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
               >
                 Supprimer Note 1
@@ -379,7 +369,7 @@ const Notes = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => handleEditNote(row.note2!)} 
+                onClick={() => handleEditNote(row.note_2!)} 
                 className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200"
               >
                 Modifier Note 2
@@ -387,7 +377,7 @@ const Notes = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => handleDeleteNote(row.note2!)} 
+                onClick={() => handleDeleteNote(row.note_2!)} 
                 className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
               >
                 Supprimer Note 2
@@ -415,7 +405,7 @@ const Notes = () => {
                   <SelectContent>
                     {classes.map((className) => (
                       <SelectItem key={className} value={className}>
-                        {professeurConnecte.classes.find(c => c.id === className)?.nom || className}
+                        {Array.isArray(professeurConnecte.classe) ? professeurConnecte.classe.find(c => c.id === className)?.nom || className : className}
                       </SelectItem>
                     ))}
                   </SelectContent>

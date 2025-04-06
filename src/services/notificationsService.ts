@@ -9,7 +9,7 @@ export const getNotifications = async (userId: number): Promise<Notification[]> 
     ORDER BY created_at DESC
   `;
   const [result] = await pool.query(query, [userId]);
-  return result.map(row => ({
+  return (result as any[]).map(row => ({
     ...row,
     createdAt: row.created_at
   })) as Notification[];
@@ -122,7 +122,7 @@ export const filterNotifications = async (filters: {
   query += ' ORDER BY created_at DESC';
 
   const [result] = await pool.query(query, params);
-  return result.map(row => ({
+  return (result as any[]).map(row => ({
     ...row,
     createdAt: row.created_at
   })) as Notification[];
