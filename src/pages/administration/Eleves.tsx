@@ -79,21 +79,13 @@ const Eleves = () => {
         />
 
         <EleveDetailDialog
-          eleve={{
-            ...selectedEleve,
-            // Conversion appropriée de l'ID pour éviter l'erreur de type
-            id: selectedEleve?.id ? Number(selectedEleve.id) : 0
-          }}
+          eleve={selectedEleve}
           open={isDetailDialogOpen}
           onOpenChange={setIsDetailDialogOpen}
         />
 
         <EditStudentDialog
-          eleve={{
-            ...selectedEleve,
-            // Conversion appropriée de l'ID pour éviter l'erreur de type
-            id: selectedEleve?.id ? Number(selectedEleve.id) : 0
-          }}
+          eleve={selectedEleve}
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           onUpdate={handleUpdateEleve}
