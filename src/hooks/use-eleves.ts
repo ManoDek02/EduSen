@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Eleve } from '@/types/eleve';
 import { getEleves, addEleve, updateEleve, deleteEleve, filterEleves } from '@/services/elevesService';
@@ -6,8 +5,7 @@ import { toast } from 'sonner';
 
 interface Filters {
   classe?: string;
-  niveaux?: string[];
-  statut?: string[];
+  status?: string[];
 }
 
 export const useEleves = () => {
@@ -102,7 +100,7 @@ export const useEleves = () => {
         setEleves(updatedEleves);
         setFilteredEleves(updatedEleves.filter(e => 
           (!activeFilters.classe || e.classe === activeFilters.classe) &&
-          (!activeFilters.statut || activeFilters.statut.includes(e.status))
+          (!activeFilters.status || activeFilters.status.includes(e.status))
         ));
         toast.success("Élève supprimé avec succès");
       } catch (error) {
@@ -119,10 +117,9 @@ export const useEleves = () => {
     try {
       setLoading(true);
       const filteredData = await filterEleves({
-        terme: searchTerm,
+        searchTerm: searchTerm,
         classe: filters.classe,
-        niveaux: filters.niveaux,
-        statut: filters.statut
+        status: filters.status
       });
       setFilteredEleves(filteredData);
     } catch (error) {
@@ -142,10 +139,9 @@ export const useEleves = () => {
     try {
       setLoading(true);
       const filteredData = await filterEleves({
-        terme: term,
+        searchTerm: searchTerm,
         classe: filters.classe,
-        niveaux: filters.niveaux,
-        statut: filters.statut
+        status: filters.status
       });
       setFilteredEleves(filteredData);
     } catch (error) {

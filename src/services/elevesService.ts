@@ -186,4 +186,54 @@ export const filterEleves = async (filters: {
   return result as Eleve[];
 };
 
+export const addEleve = async (newEleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
+  const client = await pool.getConnection();
+  try {
+    await client.query('BEGIN');
+
+    // Créer l'utilisateur
+    const userQuery = `
+      INSERT INTO users (matricule, email, nom, prenom, role, password_hash)
+      VALUES (?, ?, ?, ?, 'eleve', ?)
+      RETURNING id
+    `;
+    const [userResult] = await client.query(userQuery, [
+      newEleve.matricule,
+      newEleve.email,
+      newEleve.nom,
+      newEleve.prenom,
+      newEleve.password_hash
+    ]);
+
+    // Créer l'élève
+    const eleveQuery = `
+      INSERT INTO eleves (user_id, classe, date_naissance, responsable, status)
+      VALUES (?, ?, ?, ?, ?)
+      RETURNING *
+    `;
+    const [eleveResult] = await client.query(eleveQuery, [
+      userResult[0].id,
+      newEleve.classe,
+      newEleve.dateNaissance,
+      newEleve.responsable,
+      newEleve.status
+    ]);
+
+    await client.query('COMMIT');
+
+    return {
+      ...eleveResult[0],
+      id: eleveResult[0].id,
+      nom: newEleve.nom,
+      prenom: newEleve.prenom,
+      email: newEleve.email
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 
