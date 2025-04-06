@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
@@ -80,7 +81,8 @@ const Eleves = () => {
         <EleveDetailDialog
           eleve={{
             ...selectedEleve,
-            id: selectedEleve?.id.toString()
+            // Conversion appropriée de l'ID pour éviter l'erreur de type
+            id: selectedEleve?.id ? Number(selectedEleve.id) : 0
           }}
           open={isDetailDialogOpen}
           onOpenChange={setIsDetailDialogOpen}
@@ -89,7 +91,8 @@ const Eleves = () => {
         <EditStudentDialog
           eleve={{
             ...selectedEleve,
-            id: selectedEleve?.id.toString()
+            // Conversion appropriée de l'ID pour éviter l'erreur de type
+            id: selectedEleve?.id ? Number(selectedEleve.id) : 0
           }}
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
