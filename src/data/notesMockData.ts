@@ -12,22 +12,24 @@ const typesEvaluation = ['Contrôle', 'DS', 'TP', 'Oral'];
 // Génération des notes pour chaque élève
 const generateNotes = (eleveId: string, eleveNom: string, elevePrenom: string, classe: string, matiere: string): Note[] => {
   const notes: Note[] = [];
-  const trimestres = [1, 2, 3];
+  const semestres = [1, 2];
   
   // Générer 2 notes par trimestre
-  trimestres.forEach(trimestre => {
+  semestres.forEach(semestre => {
     // Première note (Contrôle)
     notes.push({
-      id: `${eleveId}-${matiere}-${trimestre}-1`,
+      id: 1,
       eleveId: parseInt(eleveId),
       eleveNom,
       elevePrenom,
       classe,
       matiere,
-      note: Math.floor(Math.random() * 5) + 12, // Note entre 12 et 17
+      note_1: Math.floor(Math.random() * 5) + 12, // Note entre 12 et 17
+      note_2: Math.floor(Math.random() * 5) + 12, // Note entre 12 et 17
       coefficient: 1,
-      professeur: professeurConnecte.id,
-      trimestre,
+      professeurId: professeurConnecte.id,
+      professeur: professeurConnecte.nom,
+      semestre,
       dateEvaluation: randomDate(new Date('2024-01-01'), new Date('2024-06-30')),
       commentaire: "Bon travail, quelques erreurs de calcul",
       type: 'Contrôle'
@@ -35,16 +37,18 @@ const generateNotes = (eleveId: string, eleveNom: string, elevePrenom: string, c
 
     // Deuxième note (DS)
     notes.push({
-      id: `${eleveId}-${matiere}-${trimestre}-2`,
+      id: 2,
       eleveId: parseInt(eleveId),
       eleveNom,
       elevePrenom,
       classe,
       matiere,
-      note: Math.floor(Math.random() * 4) + 13, // Note entre 13 et 17
+      note_1: Math.floor(Math.random() * 4) + 13, // Note entre 13 et 17
+      note_2: Math.floor(Math.random() * 4) + 13, // Note entre 13 et 17
       coefficient: 2,
-      professeur: professeurConnecte.id,
-      trimestre,
+      professeurId: professeurConnecte.id,
+      professeur: professeurConnecte.nom,
+      semestre,
       dateEvaluation: randomDate(new Date('2024-01-01'), new Date('2024-06-30')),
       commentaire: "Très bonne copie, démonstration claire",
       type: 'DS'
