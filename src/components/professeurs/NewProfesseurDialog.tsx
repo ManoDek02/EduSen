@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,9 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
     telephone: '',
     status: 'Temps plein' as const,
     user_id: 0,
-    matricule: ''
+    matricule: '',
+    // Ajout des champs manquants selon le type Professeur
+    classe: ''  // Ajout du champ obligatoire manquant
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,7 +79,8 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
       telephone: '',
       status: 'Temps plein',
       user_id: 0,
-      matricule: ''
+      matricule: '',
+      classe: ''  // Réinitialisation du champ classe
     });
     onOpenChange(false);
   };
@@ -126,6 +130,16 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="classe">Classe</Label>
+            <Input
+              id="classe"
+              value={formData.classe}
+              onChange={(e) => setFormData({ ...formData, classe: e.target.value })}
+              required
+            />
           </div>
 
           <div className="space-y-2">
@@ -201,4 +215,4 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
       </DialogContent>
     </Dialog>
   );
-}; 
+};
