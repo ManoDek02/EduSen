@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Cours } from '@/types/cours';
 import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -9,18 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface Cours {
-  id: string;
-  classe: string;
-  matiere: string;
-  professeur: string;
-  salle: string;
-  jour: number;
-  debut: number;
-  duree: number;
-  couleur: string;
-}
 
 interface EmploiDuTempsGridProps {
   cours: Cours[];

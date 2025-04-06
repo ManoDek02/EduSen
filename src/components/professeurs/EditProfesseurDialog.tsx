@@ -3,18 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Professeur } from '@/types/professeur';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
-
-interface Professeur {
-  id: string;
-  nom: string;
-  prenom: string;
-  matiere: string;
-  email: string;
-  telephone: string;
-  status: 'Temps plein' | 'Temps partiel' | 'Vacataire';
-}
 
 interface EditProfesseurDialogProps {
   professeur: Professeur | null;

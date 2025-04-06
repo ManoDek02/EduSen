@@ -17,21 +17,10 @@ import { PDFExportDialog } from '@/components/emploi-du-temps/PDFExportDialog';
 import { VacancesDialog } from '@/components/emploi-du-temps/VacancesDialog';
 import { ProfesseurEmploiDuTemps } from '@/components/emploi-du-temps/ProfesseurEmploiDuTemps';
 import '@/styles/emploi-du-temps.css';
+import { Cours } from '@/types/cours';
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 const heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-
-interface Cours {
-  id: string;
-  classe: string;
-  matiere: string;
-  professeur: string;
-  salle: string;
-  jour: number;
-  debut: number;
-  duree: number;
-  couleur: string;
-}
 
 interface Vacances {
   id: string;
@@ -39,120 +28,6 @@ interface Vacances {
   dateDebut: Date;
   dateFin: Date;
 }
-
-// Données de test enrichies
-const coursMockData: Cours[] = [
-  {
-    id: "1",
-    classe: "3ème A",
-    matiere: "Mathématiques",
-    professeur: "M. Dupont",
-    salle: "S-101",
-    jour: 0,
-    debut: 0,
-    duree: 2,
-    couleur: "#FF5733"
-  },
-  {
-    id: "2",
-    classe: "3ème B",
-    matiere: "Physique-Chimie",
-    professeur: "Mme Martin",
-    salle: "Labo-1",
-    jour: 1,
-    debut: 2,
-    duree: 2,
-    couleur: "#33FF57"
-  },
-  {
-    id: "3",
-    classe: "3ème A",
-    matiere: "Français",
-    professeur: "Mme Bernard",
-    salle: "S-105",
-    jour: 0,
-    debut: 3,
-    duree: 2,
-    couleur: "#3357FF"
-  },
-  {
-    id: "4",
-    classe: "3ème B",
-    matiere: "Histoire-Géo",
-    professeur: "M. Lambert",
-    salle: "S-201",
-    jour: 1,
-    debut: 0,
-    duree: 2,
-    couleur: "#FF33F6"
-  },
-  {
-    id: "5",
-    classe: "3ème A",
-    matiere: "Anglais",
-    professeur: "Mme Smith",
-    salle: "S-103",
-    jour: 2,
-    debut: 1,
-    duree: 2,
-    couleur: "#33FFF6"
-  },
-  {
-    id: "6",
-    classe: "3ème B",
-    matiere: "SVT",
-    professeur: "M. Roux",
-    salle: "Labo-2",
-    jour: 2,
-    debut: 3,
-    duree: 2,
-    couleur: "#F6FF33"
-  },
-  {
-    id: "7",
-    classe: "3ème A",
-    matiere: "EPS",
-    professeur: "M. Dubois",
-    salle: "Gymnase",
-    jour: 3,
-    debut: 0,
-    duree: 3,
-    couleur: "#FF3333"
-  },
-  {
-    id: "8",
-    classe: "3ème B",
-    matiere: "Arts Plastiques",
-    professeur: "Mme Laurent",
-    salle: "S-203",
-    jour: 3,
-    debut: 3,
-    duree: 2,
-    couleur: "#33FF33"
-  },
-  {
-    id: "9",
-    classe: "3ème A",
-    matiere: "Musique",
-    professeur: "M. Petit",
-    salle: "S-102",
-    jour: 4,
-    debut: 1,
-    duree: 2,
-    couleur: "#FFB533"
-  },
-  {
-    id: "10",
-    classe: "3ème B",
-    matiere: "Technologie",
-    professeur: "M. Moreau",
-    salle: "S-104",
-    jour: 4,
-    debut: 3,
-    duree: 2,
-    couleur: "#B533FF"
-  }
-];
 
 // Données des classes
 const classesData = {
@@ -204,7 +79,7 @@ const CoursItem = ({ cours }: { cours: Cours }) => {
 };
 
 export const EmploiDuTemps = () => {
-  const [cours, setCours] = useState<Cours[]>(coursMockData);
+  const [cours, setCours] = useState<Cours[]>([]);
   const [newCoursDialogOpen, setNewCoursDialogOpen] = useState(false);
   const [editCoursDialogOpen, setEditCoursDialogOpen] = useState(false);
   const [detailsCoursDialogOpen, setDetailsCoursDialogOpen] = useState(false);

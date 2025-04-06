@@ -53,7 +53,7 @@ export const ImportNotesDialog = ({ onImportNotes, selectedClass, selectedMatier
 
           // Convertir les données Excel en format Note
           const notes: Note[] = jsonData.map((row: any) => ({
-            id: `${row['ID Élève']}-${selectedMatiere}-${Date.now()}`,
+            id: Date.now(),
             eleveId: row['ID Élève'] || '',
             eleveNom: row['Nom'],
             elevePrenom: row['Prénom'],

@@ -2,19 +2,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Cours } from '@/types/cours';
 import { Clock, User, Building2 } from "lucide-react";
-
-interface Cours {
-  id: string;
-  classe: string;
-  matiere: string;
-  professeur: string;
-  salle: string;
-  jour: number;
-  debut: number;
-  duree: number;
-  couleur: string;
-}
 
 interface ProfesseurEmploiDuTempsProps {
   cours: Cours[];

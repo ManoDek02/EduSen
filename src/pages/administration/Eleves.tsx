@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
@@ -44,9 +43,11 @@ const Eleves = () => {
   };
 
   const confirmDelete = async () => {
-    await handleDeleteEleve();
-    setIsDeleteDialogOpen(false);
-    setSelectedEleve(null);
+    if (selectedEleve) {
+      await handleDeleteEleve();
+      setIsDeleteDialogOpen(false);
+      setSelectedEleve(null);
+    }
   };
 
   return (
@@ -77,13 +78,19 @@ const Eleves = () => {
         />
 
         <EleveDetailDialog
-          eleve={selectedEleve}
+          eleve={{
+            ...selectedEleve,
+            id: selectedEleve?.id.toString()
+          }}
           open={isDetailDialogOpen}
           onOpenChange={setIsDetailDialogOpen}
         />
 
         <EditStudentDialog
-          eleve={selectedEleve}
+          eleve={{
+            ...selectedEleve,
+            id: selectedEleve?.id.toString()
+          }}
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           onUpdate={handleUpdateEleve}

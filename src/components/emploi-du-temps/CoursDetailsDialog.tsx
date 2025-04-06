@@ -1,19 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Cours } from "@/types/cours";
 import { Calendar, Clock, Users, BookOpen, Building2 } from "lucide-react";
-
-interface Cours {
-  id: string;
-  classe: string;
-  matiere: string;
-  professeur: string;
-  salle: string;
-  jour: number;
-  debut: number;
-  duree: number;
-  couleur: string;
-}
 
 interface CoursDetailsDialogProps {
   cours: Cours | null;

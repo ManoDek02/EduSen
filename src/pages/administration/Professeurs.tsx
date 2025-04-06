@@ -6,97 +6,22 @@ import { PlusCircle, Download, Mail, Phone } from 'lucide-react';
 import DataTable from '@/components/tables/DataTable';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Professeur } from '@/types/professeur';
 import { toast } from 'sonner';
 import { NewProfesseurDialog } from '@/components/professeurs/NewProfesseurDialog';
 import { EditProfesseurDialog } from '@/components/professeurs/EditProfesseurDialog';
 import { ProfesseurDetailsDialog } from '@/components/professeurs/ProfesseurDetailsDialog';
 
-interface Professeur {
-  id: string;
-  nom: string;
-  prenom: string;
-  matiere: string;
-  email: string;
-  telephone: string;
-  status: 'Temps plein' | 'Temps partiel' | 'Vacataire';
-}
-
 // Exemple de données pour les professeurs
-const professeursMockData: Professeur[] = [
-  {
-    id: '1',
-    nom: 'Dubois',
-    prenom: 'Marie',
-    matiere: 'Mathématiques',
-    email: 'm.dubois@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Temps plein'
-  },
-  {
-    id: '2',
-    nom: 'Martin',
-    prenom: 'Thomas',
-    matiere: 'Histoire-Géographie',
-    email: 't.martin@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Temps plein'
-  },
-  {
-    id: '3',
-    nom: 'Bernard',
-    prenom: 'Julie',
-    matiere: 'Français',
-    email: 'j.bernard@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Temps partiel'
-  },
-  {
-    id: '4',
-    nom: 'Petit',
-    prenom: 'David',
-    matiere: 'Sciences Physiques',
-    email: 'd.petit@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Temps plein'
-  },
-  {
-    id: '5',
-    nom: 'Lambert',
-    prenom: 'Sophie',
-    matiere: 'Anglais',
-    email: 's.lambert@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Temps partiel'
-  },
-  {
-    id: '6',
-    nom: 'Roux',
-    prenom: 'Pierre',
-    matiere: 'SVT',
-    email: 'p.roux@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Temps plein'
-  },
-  {
-    id: '7',
-    nom: 'Blanc',
-    prenom: 'Nathalie',
-    matiere: 'Arts Plastiques',
-    email: 'n.blanc@edumanager.fr',
-    telephone: '06 XX XX XX XX',
-    status: 'Vacataire'
-  }
-];
-
 const Professeurs = () => {
-  const [professeurs, setProfesseurs] = useState<Professeur[]>(professeursMockData);
+  const [professeurs, setProfesseurs] = useState<Professeur[]>([]);
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedProfesseur, setSelectedProfesseur] = useState<Professeur | null>(null);
 
   const handleAddProfesseur = (newProfesseur: Omit<Professeur, 'id'>) => {
-    const id = (professeurs.length + 1).toString();
+    const id = professeurs.length + 1;
     const professeur = { ...newProfesseur, id };
     setProfesseurs([...professeurs, professeur]);
     toast.success('Professeur ajouté avec succès');
@@ -128,7 +53,7 @@ const Professeurs = () => {
     {
       key: 'id',
       header: 'ID',
-      cell: (row: Professeur) => <span className="text-muted-foreground">P-{row.id.padStart(5, '0')}</span>
+      cell: (row: Professeur) => <span className="text-muted-foreground">P-{row.id.toString().padStart(5, '0')}</span>
     },
     {
       key: 'professeur',

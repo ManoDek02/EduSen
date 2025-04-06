@@ -6,7 +6,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import DataTable from '@/components/tables/DataTable';
 import { getNotesColumns } from '@/components/notes/NotesTableColumns';
-import { notesMockData } from '@/data/notesMockData';
+import { Note } from '@/types/note';
 import NewNoteDialog from '@/components/notes/NewNoteDialog';
 import { EditNoteDialog } from '@/components/notes/EditNoteDialog';
 import FilterNotesDialog from '@/components/notes/FilterNotesDialog';
@@ -17,22 +17,6 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import type { jsPDF as JSPDFType } from 'jspdf';
-
-interface Note {
-  id: string;
-  eleveId: string;
-  eleveNom: string;
-  elevePrenom: string;
-  classe: string;
-  matiere: string;
-  note: number;
-  coefficient: number;
-  professeur: string;
-  trimestre: number;
-  dateEvaluation: string;
-  commentaire: string;
-  type: string;
-}
 
 interface NoteFilters {
   trimestre?: number;
@@ -56,8 +40,8 @@ const adaptColumns = (columns) => {
 
 const Notes = () => {
   const navigate = useNavigate();
-  const [notes, setNotes] = useState<Note[]>(notesMockData);
-  const [filteredNotes, setFilteredNotes] = useState<Note[]>(notesMockData);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -138,7 +122,7 @@ const Notes = () => {
     }
 
     if (filters.trimestre) {
-      result = result.filter(note => note.trimestre === filters.trimestre);
+      result = result.filter(note => note.semestre === filters.trimestre);
     }
 
     if (filters.matiere) {
@@ -151,10 +135,17 @@ const Notes = () => {
 
     if (filters.noteRange) {
       if (filters.noteRange.min !== undefined) {
-        result = result.filter(note => note.note >= filters.noteRange.min);
+        result = result.filter(note => note.note_1 >= filters.noteRange.min);
       }
       if (filters.noteRange.max !== undefined) {
-        result = result.filter(note => note.note <= filters.noteRange.max);
+        result = result.filter(note => note.note_1 <= filters.noteRange.max);
+      }
+
+      if (filters.noteRange.min !== undefined) {
+        result = result.filter(note => note.note_2 >= filters.noteRange.min);
+      }
+      if (filters.noteRange.max !== undefined) {
+        result = result.filter(note => note.note_2 <= filters.noteRange.max);
       }
     }
 
@@ -186,10 +177,11 @@ const Notes = () => {
         'Prénom': note.elevePrenom,
         'Classe': note.classe,
         'Matière': note.matiere,
-        'Note': note.note,
+        'Note 1': note.note_1,
+        'Note 2': note.note_2,
         'Coefficient': note.coefficient,
         'Professeur': note.professeur,
-        'Trimestre': note.trimestre,
+        'Trimestre': note.semestre,
         'Date': note.dateEvaluation,
         'Type': note.type,
         'Commentaire': note.commentaire
@@ -345,7 +337,8 @@ const Notes = () => {
       </AlertDialog>
 
       <EditNoteDialog
-        note={selectedNote}
+        note_1={selectedNote}
+        note_2={selectedNote}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={handleSaveNote}

@@ -17,6 +17,7 @@ import { Plus } from 'lucide-react';
 import { noteFormSchema, NoteFormValues } from './form/NoteFormSchema';
 import { elevesMockData } from '@/data/elevesMockData';
 import type { Note } from '@/types/note';
+import { professeurConnecte } from '@/types/professeur';
 
 // Import the smaller components
 import EleveSelect from './form/EleveSelect';
@@ -38,16 +39,17 @@ const NewNoteDialog: React.FC<NewNoteDialogProps> = ({ onAddNote, selectedClass,
   
   const handleSubmit = (values: NoteFormValues) => {
     const newNote: Note = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Date.now(),
       eleveId: parseInt(values.eleveId || '0'),
       eleveNom: elevesMockData.find(e => e.id === values.eleveId)?.nom || '',
       elevePrenom: elevesMockData.find(e => e.id === values.eleveId)?.prenom || '',
       classe: selectedClass,
       matiere: values.matiere,
-      note_1: values.note_1,
-      note_2: values.note_2,
+      note_1: values.note,
+      note_2: values.note,
       coefficient: values.coefficient,
-      professeur: "Mme Dubois", // À remplacer par le nom du professeur connecté
+      professeurId: professeurConnecte.id,
+      professeur: professeurConnecte.nom, // À remplacer par le nom du professeur connecté
       semestre: values.semestre,
       dateEvaluation: values.dateEvaluation,
       commentaire: values.commentaire,

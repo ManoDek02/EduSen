@@ -3,41 +3,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Note } from '@/types/note';
 import { toast } from "sonner";
 
-interface Note {
-  id: string;
-  eleveId: string;
-  eleveNom: string;
-  elevePrenom: string;
-  classe: string;
-  matiere: string;
-  note: number;
-  coefficient: number;
-  professeur: string;
-  semestre: number;
-  dateEvaluation: string;
-  commentaire: string;
-  type: string;
-}
-
 interface EditNoteDialogProps {
-  note: Note | null;
+  note_1: Note | null;
+  note_2: Note | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (note: Note) => Promise<void>;
 }
 
-export const EditNoteDialog = ({ note, open, onOpenChange, onSave }: EditNoteDialogProps) => {
+export const EditNoteDialog = ({ note_1, note_2, open, onOpenChange, onSave }: EditNoteDialogProps) => {
   const [editedNote, setEditedNote] = useState<Note | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Mettre à jour editedNote quand note change
   useEffect(() => {
-    if (note) {
-      setEditedNote({ ...note });
+    if (note_1) {
+      setEditedNote({ ...note_1 });
     }
-  }, [note]);
+  }, [note_1]);
+
+  useEffect(() => {
+    if (note_2) {
+      setEditedNote({ ...note_2 });
+    }
+  }, [note_2]);
 
   const handleSave = async () => {
     if (!editedNote) return;
@@ -78,8 +70,16 @@ export const EditNoteDialog = ({ note, open, onOpenChange, onSave }: EditNoteDia
             <Label>Note</Label>
             <Input
               type="number"
-              value={editedNote.note}
-              onChange={(e) => setEditedNote({ ...editedNote, note: parseFloat(e.target.value) })}
+              value={editedNote.note_1}
+              onChange={(e) => setEditedNote({ ...editedNote, note_1: parseFloat(e.target.value) })}
+              min="0"
+              max="20"
+              step="0.25"
+            />
+            <Input
+              type="number"
+              value={editedNote.note_2}
+              onChange={(e) => setEditedNote({ ...editedNote, note_2: parseFloat(e.target.value) })}
               min="0"
               max="20"
               step="0.25"

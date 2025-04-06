@@ -3,18 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Professeur } from '@/types/professeur';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
-
-interface Professeur {
-  id: string;
-  nom: string;
-  prenom: string;
-  matiere: string;
-  email: string;
-  telephone: string;
-  status: 'Temps plein' | 'Temps partiel' | 'Vacataire';
-}
 
 interface NewProfesseurDialogProps {
   open: boolean;
@@ -48,14 +39,16 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
     matiere: '',
     email: '',
     telephone: '',
-    status: 'Temps plein' as const
+    status: 'Temps plein' as const,
+    user_id: 0,
+    matricule: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validation basique
-    if (!formData.nom || !formData.prenom || !formData.matiere || !formData.email || !formData.telephone) {
+    if (!formData.nom || !formData.prenom || !formData.matiere || !formData.email || !formData.telephone || formData.user_id <= 0 || !formData.matricule) {
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -67,6 +60,13 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
       return;
     }
 
+    // Validation téléphone (exemple simple)
+    const phoneRegex = /^[0-9]{10}$/; // Ajustez selon le format attendu
+    if (!phoneRegex.test(formData.telephone)) {
+      toast.error('Veuillez entrer un numéro de téléphone valide');
+      return;
+    }
+
     onAddProfesseur(formData);
     setFormData({
       nom: '',
@@ -74,7 +74,9 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
       matiere: '',
       email: '',
       telephone: '',
-      status: 'Temps plein'
+      status: 'Temps plein',
+      user_id: 0,
+      matricule: ''
     });
     onOpenChange(false);
   };
@@ -143,6 +145,27 @@ export const NewProfesseurDialog = ({ open, onOpenChange, onAddProfesseur }: New
               id="telephone"
               value={formData.telephone}
               onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="user_id">User ID</Label>
+            <Input
+              id="user_id"
+              type="number"
+              value={formData.user_id}
+              onChange={(e) => setFormData({ ...formData, user_id: parseInt(e.target.value) })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="matricule">Matricule</Label>
+            <Input
+              id="matricule"
+              value={formData.matricule}
+              onChange={(e) => setFormData({ ...formData, matricule: e.target.value })}
               required
             />
           </div>

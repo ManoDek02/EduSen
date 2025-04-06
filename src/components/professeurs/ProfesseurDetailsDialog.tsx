@@ -1,19 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Professeur } from "@/types/professeur";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mail, Phone, BookOpen, Clock, Calendar } from "lucide-react";
-
-interface Professeur {
-  id: string;
-  nom: string;
-  prenom: string;
-  matiere: string;
-  email: string;
-  telephone: string;
-  status: 'Temps plein' | 'Temps partiel' | 'Vacataire';
-}
-
 interface ProfesseurDetailsDialogProps {
   professeur: Professeur | null;
   open: boolean;
@@ -85,7 +75,7 @@ export const ProfesseurDetailsDialog = ({ professeur, open, onOpenChange, onEdit
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>ID : P-{professeur.id.padStart(5, '0')}</span>
+                <span>ID : P-{professeur.id.toString().padStart(5, '0')}</span>
               </div>
             </div>
           </div>

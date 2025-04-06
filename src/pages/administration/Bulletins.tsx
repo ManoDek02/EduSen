@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Bulletin, bulletinsMockData } from '@/data/bulletinsMockData';
+import { Bulletin } from '@/types/bulletin';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import DataTable from '@/components/tables/DataTable';
@@ -14,20 +14,22 @@ import NewBulletinDialog from '@/components/bulletins/NewBulletinDialog';
 import FilterBulletinsDialog from '@/components/bulletins/FilterBulletinsDialog';
 import { formatDate } from '@/lib/utils';
 
+interface ActiveFilters {
+  semestre?: number;
+  classe?: string;
+  status?: string[];
+}
+
 const Bulletins = () => {
   const navigate = useNavigate();
-  const [bulletins, setBulletins] = useState<Bulletin[]>(bulletinsMockData);
-  const [filteredBulletins, setFilteredBulletins] = useState<Bulletin[]>(bulletinsMockData);
+  const [bulletins, setBulletins] = useState<Bulletin[]>([]);
+  const [filteredBulletins, setFilteredBulletins] = useState<Bulletin[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBulletin, setSelectedBulletin] = useState<Bulletin | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [bulletinToDelete, setBulletinToDelete] = useState<Bulletin | null>(null);
-  const [activeFilters, setActiveFilters] = useState<{
-    trimestre?: string;
-    classe?: string;
-    status?: string[];
-  }>({});
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
 
   const handleAddBulletin = (newBulletin: Bulletin) => {
     const updatedBulletins = [...bulletins, newBulletin];
@@ -64,8 +66,6 @@ const Bulletins = () => {
 
   const handlePrintBulletin = (bulletin: Bulletin) => {
     setSelectedBulletin(bulletin);
-    
-    // Simuler une impression (en utilisant le dialogue détaillé avec mode impression)
     setIsDetailOpen(true);
     toast.success('Préparation de l\'impression...');
   };
@@ -87,17 +87,17 @@ const Bulletins = () => {
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (activeFilters.trimestre) count++;
+    if (activeFilters.semestre) count++;
     if (activeFilters.classe) count++;
     if (activeFilters.status?.length) count++;
     return count;
   };
 
-  const applyFiltersAndSearch = (data: Bulletin[], term: string, filters: any) => {
+  const applyFiltersAndSearch = (data: Bulletin[], term: string, filters: ActiveFilters) => {
     let result = [...data];
 
-    if (filters.trimestre) {
-      result = result.filter(bulletin => bulletin.trimestre === filters.trimestre);
+    if (filters.semestre) {
+      result = result.filter(bulletin => bulletin.semestre === filters.semestre);
     }
 
     if (filters.classe) {
@@ -153,12 +153,12 @@ const Bulletins = () => {
       )
     },
     {
-      key: 'trimestre',
+      key: 'semestre',
       header: 'Période',
       cell: (row) => (
         <div className="flex flex-col">
           <Badge variant="outline" className="w-fit">
-            Trimestre {row.trimestre}
+            Trimestre {row.semestre}
           </Badge>
           <div className="text-xs text-muted-foreground">{row.annee}</div>
         </div>

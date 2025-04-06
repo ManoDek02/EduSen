@@ -3,20 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Cours } from '@/types/cours';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
-
-interface Cours {
-  id: string;
-  classe: string;
-  matiere: string;
-  professeur: string;
-  salle: string;
-  jour: number;
-  debut: number;
-  duree: number;
-  couleur: string;
-}
 
 interface EditCoursDialogProps {
   cours: Cours | null;
