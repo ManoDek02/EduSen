@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
@@ -108,11 +107,11 @@ const ElevesProf = () => {
                     <SelectValue placeholder="Sélectionner une classe" />
                   </SelectTrigger>
                   <SelectContent>
-                    {professeurConnecte.classes.map((classe) => (
+                    {Array.isArray(professeurConnecte.classe) ? professeurConnecte.classe.map((classe) => (
                       <SelectItem key={classe.id} value={classe.id}>
                         {classe.nom}
                       </SelectItem>
-                    ))}
+                    )) : null}
                   </SelectContent>
                 </Select>
               </div>

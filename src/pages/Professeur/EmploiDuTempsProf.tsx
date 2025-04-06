@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -12,80 +12,11 @@ import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { toast } from 'sonner';
+import { Cours } from '@/types/cours';
+import mysql from 'mysql2/promise';
 
-const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-const heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-
-type Cours = {
-  id: string;
-  classe: string;
-  matiere: string;
-  professeur: string;
-  salle: string;
-  jour: number;
-  debut: number;
-  duree: number;
-  couleur: string;
-};
-
-// Exemples de cours du professeur
-const coursMockData: Cours[] = [
-  {
-    id: '1',
-    classe: 'TS1',
-    matiere: 'Mathématiques',
-    professeur: professeurConnecte.id.toString(),
-    salle: 'S-102',
-    jour: 0,
-    debut: 0,
-    duree: 2,
-    couleur: 'bg-blue-100 border-blue-300 text-blue-800'
-  },
-  {
-    id: '2',
-    classe: 'TS2',
-    matiere: 'Mathématiques',
-    professeur: professeurConnecte.id.toString(),
-    salle: 'S-102',
-    jour: 1,
-    debut: 1,
-    duree: 2,
-    couleur: 'bg-blue-100 border-blue-300 text-blue-800'
-  },
-  {
-    id: '3',
-    classe: 'TS1',
-    matiere: 'Physique-Chimie',
-    professeur: professeurConnecte.id,
-    salle: 'S-103',
-    jour: 2,
-    debut: 0,
-    duree: 2,
-    couleur: 'bg-red-100 border-red-300 text-red-800'
-  },
-  {
-    id: '4',
-    classe: 'TS2',
-    matiere: 'Physique-Chimie',
-    professeur: professeurConnecte.id,
-    salle: 'S-104',
-    jour: 3,
-    debut: 2,
-    duree: 2,
-    couleur: 'bg-red-100 border-red-300 text-red-800'
-  },
-  {
-    id: '5',
-    classe: 'TS3',
-    matiere: 'Mathématiques',
-    professeur: professeurConnecte.id,
-    salle: 'S-105',
-    jour: 4,
-    debut: 0,
-    duree: 2,
-    couleur: 'bg-blue-100 border-blue-300 text-blue-800'
-  }
-];
+const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
 
 // Composant pour les cours dans l'emploi du temps
 const CoursItem = ({ cours }: { cours: Cours }) => {
@@ -114,21 +45,14 @@ const CoursItem = ({ cours }: { cours: Cours }) => {
 
 const EmploiDuTempsProf = () => {
   const [semaine, setSemaine] = useState('Semaine du 10 au 14 juin 2024');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [cours, setCours] = useState<Cours[]>([]);
 
   // Filtrer les cours pour ne garder que ceux du professeur connecté
   const coursProfesseur = useMemo(() => {
-    return coursMockData.filter(cours => {
-      // Vérifier que le cours appartient au professeur
-      if (cours.professeur !== professeurConnecte.id.toString()) return false;
-      
-      // Vérifier que la classe est assignée au professeur
-      const classe = professeurConnecte.classes.find(c => c.id === cours.classe);
-      if (!classe) return false;
-      
-      // Vérifier que la matière est enseignée dans cette classe
-      return classe.matieres.includes(cours.matiere);
-    });
-  }, []);
+    return cours.filter(cours => cours.professeurId === professeurConnecte.id);
+  }, [cours, professeurConnecte.id]);
 
   const handlePrevSemaine = () => {
     setSemaine('Semaine du 3 au 7 juin 2024');
@@ -253,6 +177,28 @@ const EmploiDuTempsProf = () => {
     doc.save(`Emploi_du_temps_${professeurConnecte.nom}_${semaine}.pdf`);
     toast.success('Export PDF réussi');
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const connection = await mysql.createConnection({
+          host: 'localhost',
+          user: 'votre_utilisateur',
+          password: 'votre_mot_de_passe',
+          database: 'votre_base_de_donnees'
+        });
+        const [rows] = await connection.execute('SELECT * FROM cours WHERE professeur_id = ?', [professeurConnecte.id]);
+        setCours(rows as Cours[]);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [professeurConnecte.id]);
 
   return (
     <MainLayout>

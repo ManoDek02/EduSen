@@ -6,6 +6,7 @@ export interface Professeur {
   nom: string;
   prenom: string;
   matiere: string;
+  classe: string;
   telephone?: string;
   status: 'Temps plein' | 'Temps partiel' | 'Vacataire';
   password_hash?: string;
@@ -22,6 +23,7 @@ export const professeurConnecte: Professeur = {
   nom: "Dubois",
   prenom: "Marie",
   matiere: "Mathématiques",
+  classe: "AS2",
   telephone: "0123456789",
   status: "Temps plein"
 }; 

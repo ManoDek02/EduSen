@@ -4,70 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Mail, Phone, Building2, RefreshCw } from 'lucide-react';
-
-// Données de test pour les professeurs
-const professeursData = [
-  {
-    id: 1,
-    nom: "Martin",
-    prenom: "Jean",
-    matiere: "Mathématiques",
-    email: "jean.martin@edusn.edu",
-    telephone: "01 23 45 67 89",
-    bureau: "Bureau 101",
-    classe: "AS2"
-  },
-  {
-    id: 2,
-    nom: "Dubois",
-    prenom: "Marie",
-    matiere: "Français",
-    email: "marie.dubois@edusn.edu",
-    telephone: "01 23 45 67 90",
-    bureau: "Bureau 102",
-    classe: "AS2"
-  },
-  {
-    id: 3,
-    nom: "Bernard",
-    prenom: "Pierre",
-    matiere: "Histoire-Géo",
-    email: "pierre.bernard@edusn.edu",
-    telephone: "01 23 45 67 91",
-    bureau: "Bureau 103",
-    classe: "AS2"
-  },
-  {
-    id: 4,
-    nom: "Petit",
-    prenom: "Sophie",
-    matiere: "Anglais",
-    email: "sophie.petit@edusn.edu",
-    telephone: "01 23 45 67 92",
-    bureau: "Bureau 104",
-    classe: "AS2"
-  },
-  {
-    id: 5,
-    nom: "Durand",
-    prenom: "Marc",
-    matiere: "Physique-Chimie",
-    email: "marc.durand@edusn.edu",
-    telephone: "01 23 45 67 93",
-    bureau: "Labo 1",
-    classe: "AS2"
-  }
-];
+import { Professeur, professeurConnecte } from '@/types/professeur';
 
 const ContactProfesseurs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const filteredProfesseurs = professeursData.filter(professeur =>
+  const filteredProfesseurs = Array.isArray(professeurConnecte) ? professeurConnecte.filter(professeur =>
     professeur.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     professeur.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
     professeur.matiere.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   const handleRefresh = () => {
     setIsRefreshing(true);

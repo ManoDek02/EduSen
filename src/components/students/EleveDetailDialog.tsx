@@ -12,7 +12,7 @@ import { FileText, Printer, UserCog } from "lucide-react";
 
 interface EleveDetailDialogProps {
   eleve: {
-    id: string;
+    id: number;
     nom: string;
     prenom: string;
     classe: string;
