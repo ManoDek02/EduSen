@@ -8,12 +8,12 @@ import { Filter } from 'lucide-react';
 
 interface FilterBulletinsDialogProps {
   onApplyFilters: (filters: {
-    trimestre?: string;
+    semestre?: string;
     classe?: string;
     status?: string[];
   }) => void;
   activeFilters?: {
-    trimestre?: string;
+    semestre?: string;
     classe?: string;
     status?: string[];
   };
@@ -57,16 +57,15 @@ const FilterBulletinsDialog: React.FC<FilterBulletinsDialogProps> = ({
           <div className="space-y-2">
             <Label>Trimestre</Label>
             <Select
-              value={filters.trimestre}
-              onValueChange={(value) => setFilters({ ...filters, trimestre: value })}
+              value={filters.semestre}
+              onValueChange={(value) => setFilters({ ...filters, semestre: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un trimestre" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Trimestre 1</SelectItem>
-                <SelectItem value="2">Trimestre 2</SelectItem>
-                <SelectItem value="3">Trimestre 3</SelectItem>
+                <SelectItem value="1">Semestre 1</SelectItem>
+                <SelectItem value="2">Semestre 2</SelectItem>
               </SelectContent>
             </Select>
           </div>

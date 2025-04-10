@@ -18,7 +18,8 @@ interface Note {
   eleve: string;
   classe: string;
   matiere: string;
-  note: number;
+  note_1: number;
+  note_2: number;
   date: string;
 }
 
@@ -119,12 +120,14 @@ export const NotesManagement = () => {
                   <TableCell>{note.eleve}</TableCell>
                   <TableCell>{note.classe}</TableCell>
                   <TableCell>{note.matiere}</TableCell>
-                  <TableCell>{note.note}/20</TableCell>
+                  <TableCell>{note.note_1}/20</TableCell>
+                  <TableCell>{note.note_2}/20</TableCell>
                   <TableCell>{new Date(note.date).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <EditNoteButton
                       noteId={note.id}
-                      currentNote={note.note}
+                      currentNote_1={note.note_1}
+                      currentNote_2={note.note_1}
                       onUpdate={handleUpdateNote}
                     />
                   </TableCell>

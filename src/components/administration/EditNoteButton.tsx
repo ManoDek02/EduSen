@@ -6,13 +6,15 @@ import { toast } from "sonner";
 
 interface EditNoteButtonProps {
   noteId: string;
-  currentNote: number;
+  currentNote_1: number;
+  currentNote_2: number;
   onUpdate: (noteId: string, newNote: number) => Promise<void>;
 }
 
-export const EditNoteButton = ({ noteId, currentNote, onUpdate }: EditNoteButtonProps) => {
+export const EditNoteButton = ({ noteId, currentNote_1, currentNote_2, onUpdate }: EditNoteButtonProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [note, setNote] = useState(currentNote.toString());
+  const [note_1, setNote_1] = useState(currentNote_1.toString());
+  const [note_2, setNote_2] = useState(currentNote_2.toString());
   const [isLoading, setIsLoading] = useState(false);
 
   const handleEdit = () => {
@@ -21,20 +23,40 @@ export const EditNoteButton = ({ noteId, currentNote, onUpdate }: EditNoteButton
 
   const handleCancel = () => {
     setIsEditing(false);
-    setNote(currentNote.toString());
+    setNote_1(currentNote_1.toString());
+    setNote_2(currentNote_2.toString());
   };
 
   const handleSave = async () => {
-    const newNote = parseFloat(note);
+    const newNote_1 = parseFloat(note_1);
     
-    if (isNaN(newNote) || newNote < 0 || newNote > 20) {
-      toast.error("La note doit être comprise entre 0 et 20");
+    if (isNaN(newNote_1) || newNote_1 < 0 || newNote_1 > 20) {
+      toast.error("La note 1 doit être comprise entre 0 et 20");
       return;
     }
 
     try {
       setIsLoading(true);
-      await onUpdate(noteId, newNote);
+      await onUpdate(noteId, newNote_1);
+      setIsEditing(false);
+      toast.success("Note mise à jour avec succès");
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour de la note");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+
+    const newNote_2 = parseFloat(note_2);
+    
+    if (isNaN(newNote_2) || newNote_2 < 0 || newNote_2 > 20) {
+      toast.error("La note 2 doit être comprise entre 0 et 20");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await onUpdate(noteId, newNote_2);
       setIsEditing(false);
       toast.success("Note mise à jour avec succès");
     } catch (error) {
@@ -50,8 +72,17 @@ export const EditNoteButton = ({ noteId, currentNote, onUpdate }: EditNoteButton
       <div className="flex items-center gap-2">
         <Input
           type="number"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
+          value={note_1}
+          onChange={(e) => setNote_1(e.target.value)}
+          className="w-20"
+          min="0"
+          max="20"
+          step="0.25"
+        />
+        <Input
+          type="number"
+          value={note_2}
+          onChange={(e) => setNote_2(e.target.value)}
           className="w-20"
           min="0"
           max="20"

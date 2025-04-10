@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { elevesMockData } from '@/data/elevesMockData';
+import { filterEleves } from '@/services/elevesService';
 
 interface EleveSelectProps {
   form: any;
@@ -9,7 +9,37 @@ interface EleveSelectProps {
 }
 
 const EleveSelect: React.FC<EleveSelectProps> = ({ form, selectedClass }) => {
-  const eleves = elevesMockData.filter(eleve => eleve.classe === selectedClass);
+  const [eleves, setEleves] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEleves = async () => {
+      if (!selectedClass) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        const filteredEleves = await filterEleves({ classe: selectedClass });
+        setEleves(filteredEleves);
+      } catch (err) {
+        setError(err.message);
+        console.error('Erreur lors du chargement des élèves:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEleves();
+  }, [selectedClass]);
+
+  if (loading) {
+    return <div>Chargement des élèves...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Erreur: {error}</div>;
+  }
 
   return (
     <FormField

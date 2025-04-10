@@ -1,6 +1,6 @@
 import { Pool } from 'mysql2/promise';
-import pool from '@/config/database';
-import { Eleve } from '@/types/eleve';
+import pool from '../config/database';
+import { Eleve } from '../types/eleve';
 
 export const getEleves = async (): Promise<Eleve[]> => {
   const query = `
@@ -28,7 +28,6 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
   try {
     await client.query('BEGIN');
 
-    // Créer l'utilisateur
     const userQuery = `
       INSERT INTO users (matricule, email, nom, prenom, role, password_hash)
       VALUES (?, ?, ?, ?, 'eleve', ?)
@@ -42,7 +41,6 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
       eleve.password_hash
     ]);
 
-    // Créer l'élève
     const eleveQuery = `
       INSERT INTO eleves (user_id, classe, date_naissance, responsable, status)
       VALUES (?, ?, ?, ?, ?)
@@ -57,7 +55,6 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
     ]);
 
     await client.query('COMMIT');
-
     return {
       ...eleveResult[0],
       nom: eleve.nom,
@@ -72,36 +69,61 @@ export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
   }
 };
 
+export const addEleve = async (newEleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
+  return createEleve(newEleve);
+};
+
+export const deleteEleve = async (id: number): Promise<void> => {
+  const client = await pool.getConnection();
+  try {
+    await client.query('BEGIN');
+    
+    // D'abord supprimer l'élève
+    await client.query('DELETE FROM eleves WHERE id = ?', [id]);
+    
+    // Puis supprimer l'utilisateur associé
+    await client.query('DELETE FROM users WHERE id IN (SELECT user_id FROM eleves WHERE id = ?)', [id]);
+    
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<Eleve> => {
   const client = await pool.getConnection();
   try {
     await client.query('BEGIN');
 
-    // Mettre à jour l'utilisateur
-    if (eleve.nom || eleve.prenom || eleve.email) {
-      const userQuery = `
-        UPDATE users
-        SET nom = COALESCE(?, nom),
-            prenom = COALESCE(?, prenom),
-            email = COALESCE(?, email)
-        FROM eleves
-        WHERE users.id = eleves.user_id AND eleves.id = ?
-      `;
-      await client.query(userQuery, [
-        eleve.nom,
-        eleve.prenom,
-        eleve.email,
-        id
-      ]);
-    }
+    // Update user table
+    const userQuery = `
+      UPDATE users
+      SET 
+        matricule = COALESCE(?, matricule),
+        email = COALESCE(?, email),
+        nom = COALESCE(?, nom),
+        prenom = COALESCE(?, prenom)
+      WHERE id IN (SELECT user_id FROM eleves WHERE id = ?)
+    `;
+    await client.query(userQuery, [
+      eleve.matricule,
+      eleve.email,
+      eleve.nom,
+      eleve.prenom,
+      id
+    ]);
 
-    // Mettre à jour l'élève
+    // Update eleve table
     const eleveQuery = `
       UPDATE eleves
-      SET classe = COALESCE(?, classe),
-          date_naissance = COALESCE(?, date_naissance),
-          responsable = COALESCE(?, responsable),
-          status = COALESCE(?, status)
+      SET 
+        classe = COALESCE(?, classe),
+        date_naissance = COALESCE(?, date_naissance),
+        responsable = COALESCE(?, responsable),
+        status = COALESCE(?, status)
       WHERE id = ?
       RETURNING *
     `;
@@ -114,31 +136,11 @@ export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<El
     ]);
 
     await client.query('COMMIT');
-
-    return result[0];
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export const deleteEleve = async (id: number): Promise<void> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-
-    // Supprimer l'élève
-    const eleveQuery = 'DELETE FROM eleves WHERE id = ? RETURNING user_id';
-    const [result] = await client.query(eleveQuery, [id]);
-
-    // Supprimer l'utilisateur associé
-    if (result[0]) {
-      await client.query('DELETE FROM users WHERE id = ?', [result[0].user_id]);
-    }
-
-    await client.query('COMMIT');
+    
+    // Get the full updated record
+    const updatedEleve = await getEleveById(id);
+    if (!updatedEleve) throw new Error('Student not found after update');
+    return updatedEleve;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -148,10 +150,9 @@ export const deleteEleve = async (id: number): Promise<void> => {
 };
 
 export const filterEleves = async (filters: {
-  status?: string[];
   classe?: string;
-  searchTerm?: string;
 }): Promise<Eleve[]> => {
+
   let query = `
     SELECT e.*, u.nom, u.prenom, u.email
     FROM eleves e
@@ -159,81 +160,14 @@ export const filterEleves = async (filters: {
     WHERE 1=1
   `;
   const params: any[] = [];
-  let paramIndex = 1;
-
-  if (filters.status && filters.status.length > 0) {
-    query += ` AND e.status = ANY($${paramIndex})`;
-    params.push(filters.status);
-    paramIndex++;
-  }
 
   if (filters.classe) {
-    query += ` AND e.classe = $${paramIndex}`;
+    query += ` AND e.classe = ?`;
     params.push(filters.classe);
-    paramIndex++;
-  }
-
-  if (filters.searchTerm) {
-    query += ` AND (
-      u.nom ILIKE $${paramIndex} OR
-      u.prenom ILIKE $${paramIndex} OR
-      u.email ILIKE $${paramIndex}
-    )`;
-    params.push(`%${filters.searchTerm}%`);
   }
 
   const [result] = await pool.query(query, params);
   return result as Eleve[];
+
+  
 };
-
-export const addEleve = async (newEleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-
-    // Créer l'utilisateur
-    const userQuery = `
-      INSERT INTO users (matricule, email, nom, prenom, role, password_hash)
-      VALUES (?, ?, ?, ?, 'eleve', ?)
-      RETURNING id
-    `;
-    const [userResult] = await client.query(userQuery, [
-      newEleve.matricule,
-      newEleve.email,
-      newEleve.nom,
-      newEleve.prenom,
-      newEleve.password_hash
-    ]);
-
-    // Créer l'élève
-    const eleveQuery = `
-      INSERT INTO eleves (user_id, classe, date_naissance, responsable, status)
-      VALUES (?, ?, ?, ?, ?)
-      RETURNING *
-    `;
-    const [eleveResult] = await client.query(eleveQuery, [
-      userResult[0].id,
-      newEleve.classe,
-      newEleve.dateNaissance,
-      newEleve.responsable,
-      newEleve.status
-    ]);
-
-    await client.query('COMMIT');
-
-    return {
-      ...eleveResult[0],
-      id: eleveResult[0].id,
-      nom: newEleve.nom,
-      prenom: newEleve.prenom,
-      email: newEleve.email
-    };
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-
