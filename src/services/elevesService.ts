@@ -1,5 +1,5 @@
 import { Pool } from 'mysql2/promise';
-import pool from '../config/database';
+import pool from '../../Backend/src/config/database';
 import { Eleve } from '../types/eleve';
 
 export const getEleves = async (): Promise<Eleve[]> => {

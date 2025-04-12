@@ -1,5 +1,5 @@
 import { Pool } from 'mysql2/promise';
-import pool from '../config/database';
+import pool from '../../Backend/src/config/database';
 
 export interface Note {
   id: number;

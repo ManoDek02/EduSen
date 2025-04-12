@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 
 interface FilterOptions {
   status?: string[];
+  searchTerm?: string;
   // Autres options de filtrage
 }
 

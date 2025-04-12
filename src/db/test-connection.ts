@@ -1,4 +1,4 @@
-import pool from '../config/database';
+import pool from '../../Backend/src/config/database';
 
 async function testConnection() {
   try {

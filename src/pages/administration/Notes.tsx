@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -17,6 +17,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import type { jsPDF as JSPDFType } from 'jspdf';
+import { fetchGrades } from '@/services/api'; // 👈 AJOUT IMPORT     
 
 interface NoteFilters {
   trimestre?: number;
@@ -29,7 +30,6 @@ interface NoteFilters {
   classe?: string;
 }
 
-// This adapter transforms @tanstack/react-table ColumnDef to our DataTable Column type
 const adaptColumns = (columns) => {
   return columns.map(column => ({
     key: column.accessorKey || column.id,
@@ -51,6 +51,21 @@ const Notes = () => {
   const [selectedMatiere, setSelectedMatiere] = useState("");
   const [matieresDisponibles, setMatieresDisponibles] = useState<string[]>([]);
 
+  // 👇 AJOUT USEEFFECT pour charger les notes depuis l'API
+  useEffect(() => {
+    const loadNotes = async () => {
+      try {
+        const data = await fetchGrades();
+        setNotes(data);
+        setFilteredNotes(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des notes :", error);
+      }
+    };
+
+    loadNotes();
+  }, []);
+
   const handleAddNote = (newNote: Note) => {
     const updatedNotes = [...notes, newNote];
     setNotes(updatedNotes);
@@ -64,7 +79,6 @@ const Notes = () => {
 
   const handleSaveNote = async (updatedNote: Note) => {
     try {
-      // TODO: Remplacer par l'appel API réel
       const response = await fetch(`/api/notes/${updatedNote.id}`, {
         method: 'PUT',
         headers: {
@@ -136,15 +150,10 @@ const Notes = () => {
     if (filters.noteRange) {
       if (filters.noteRange.min !== undefined) {
         result = result.filter(note => note.note_1 >= filters.noteRange.min);
-      }
-      if (filters.noteRange.max !== undefined) {
-        result = result.filter(note => note.note_1 <= filters.noteRange.max);
-      }
-
-      if (filters.noteRange.min !== undefined) {
         result = result.filter(note => note.note_2 >= filters.noteRange.min);
       }
       if (filters.noteRange.max !== undefined) {
+        result = result.filter(note => note.note_1 <= filters.noteRange.max);
         result = result.filter(note => note.note_2 <= filters.noteRange.max);
       }
     }
@@ -170,7 +179,6 @@ const Notes = () => {
     }
 
     try {
-      // Préparer les données pour l'export
       const exportData = filteredNotes.map(note => ({
         'ID Élève': note.eleveId,
         'Nom': note.eleveNom,
@@ -188,30 +196,23 @@ const Notes = () => {
       }));
 
       if (format === 'excel' || format === 'csv') {
-        // Créer un nouveau classeur Excel
         const ws = XLSX.utils.json_to_sheet(exportData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Notes');
 
-        // Ajuster la largeur des colonnes
         const colWidths = Object.keys(exportData[0]).map(key => ({
           wch: Math.max(key.length, ...exportData.map(row => String(row[key]).length))
         }));
         ws['!cols'] = colWidths;
 
-        // Exporter le fichier
         XLSX.writeFile(wb, `notes_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'csv'}`);
       } else if (format === 'pdf') {
-        // Créer un nouveau document PDF
         const doc = new jsPDF() as JSPDFType & { autoTable: (options: any) => void };
-        
-        // Ajouter un titre
         doc.setFontSize(16);
         doc.text('Bulletin de notes', 14, 15);
         doc.setFontSize(10);
         doc.text(`Date d'export: ${new Date().toLocaleDateString()}`, 14, 22);
 
-        // Configurer le tableau
         doc.autoTable({
           head: [Object.keys(exportData[0])],
           body: exportData.map(Object.values),
@@ -231,7 +232,6 @@ const Notes = () => {
           }
         });
 
-        // Ajouter un pied de page
         const pageCount = doc.internal.pages.length;
         for (let i = 1; i <= pageCount; i++) {
           doc.setPage(i);
@@ -244,7 +244,6 @@ const Notes = () => {
           );
         }
 
-        // Sauvegarder le PDF
         doc.save(`notes_${new Date().toISOString().split('T')[0]}.pdf`);
       }
 
@@ -261,7 +260,6 @@ const Notes = () => {
     applyFiltersAndSearch(updatedNotes, searchTerm, {});
   };
 
-  // Get columns from NotesTableColumns and adapt them to the format DataTable expects
   const tanstackColumns = getNotesColumns(handleEditNote, handleDeleteNote);
   const columns = adaptColumns(tanstackColumns);
 
@@ -278,24 +276,18 @@ const Notes = () => {
                 selectedClass={selectedClass}
                 selectedMatiere={selectedMatiere}
               />
-              <div className="flex items-center">
-                <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export CSV
-                </Button>
-              </div>
-              <div className="flex items-center">
-                <Button variant="outline" size="sm" onClick={() => handleExport('excel')}>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Excel
-                </Button>
-              </div>
-              <div className="flex items-center">
-                <Button variant="outline" size="sm" onClick={() => handleExport('pdf')}>
-                  <File className="mr-2 h-4 w-4" />
-                  PDF
-                </Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport('excel')}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport('pdf')}>
+                <File className="mr-2 h-4 w-4" />
+                PDF
+              </Button>
               <NewNoteDialog 
                 onAddNote={handleAddNote}
                 selectedClass={selectedClass}
