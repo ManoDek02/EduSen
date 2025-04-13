@@ -1,240 +1,45 @@
-import pool from '@/config/database';
-import { Bulletin, BulletinMatiere } from '@/types/bulletin';
+const API_URL = 'http://localhost:3001/api/bulletins';
 
-export const getBulletins = async (): Promise<Bulletin[]> => {
-  const query = `
-    SELECT b.*, e.nom as eleve_nom, e.prenom as eleve_prenom
-    FROM bulletins b
-    JOIN eleves e ON b.eleve_id = e.id
-  `;
-  const [result] = await pool.query(query);
-  return (result as any[]).map(row => ({
-    ...row,
-    eleveNom: row.eleve_nom,
-    elevePrenom: row.eleve_prenom
-  })) as Bulletin[];
-};
+export async function getBulletins() {
+  const res = await fetch(API_URL);
+  return await res.json();
+}
 
-export const getBulletinById = async (id: number): Promise<Bulletin | null> => {
-  const client = await pool.getConnection();
-  try {
-    // Récupérer le bulletin
-    const bulletinQuery = `
-      SELECT b.*, e.nom as eleve_nom, e.prenom as eleve_prenom
-      FROM bulletins b
-      JOIN eleves e ON b.eleve_id = e.id
-      WHERE b.id = ?
-    `;
-    const [bulletinResult] = await client.query(bulletinQuery, [id]);
-    if (!bulletinResult[0]) return null;
+export async function getBulletinById(id: number) {
+  const res = await fetch(`${API_URL}/${id}`);
+  return await res.json();
+}
 
-    // Récupérer les matières du bulletin
-    const matieresQuery = `
-      SELECT *
-      FROM bulletin_matieres
-      WHERE bulletin_id = ?
-    `;
-    const [matieresResult] = await client.query(matieresQuery, [id]);
+export async function createBulletin(bulletin: any) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(bulletin),
+  });
+  return await res.json();
+}
 
-    return {
-      ...bulletinResult[0],
-      eleveNom: bulletinResult[0].eleve_nom,
-      elevePrenom: bulletinResult[0].eleve_prenom,
-      matieres: matieresResult
-    };
-  } finally {
-    client.release();
-  }
-};
+export async function updateBulletin(id: number, bulletin: any) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(bulletin),
+  });
+  return await res.json();
+}
 
-export const createBulletin = async (bulletin: Omit<Bulletin, 'id'>): Promise<Bulletin> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
+export async function deleteBulletin(id: number) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  });
+  return await res.json();
+}
 
-    // Créer le bulletin
-    const bulletinQuery = `
-      INSERT INTO bulletins (
-        eleve_id, trimestre, annee, moyenne_generale,
-        moyenne_classe, appreciation_generale, status
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING *
-    `;
-    const [bulletinResult] = await client.query(bulletinQuery, [
-      bulletin.eleveId,
-      bulletin.semestre,
-      bulletin.annee,
-      bulletin.moyenneGenerale,
-      bulletin.moyenneClasse,
-      bulletin.appreciationGenerale,
-      bulletin.status
-    ]);
-
-    // Créer les matières du bulletin
-    for (const matiere of bulletin.matieres) {
-      const matiereQuery = `
-        INSERT INTO bulletin_matieres (
-          bulletin_id, matiere, moyenne, moyenne_classe,
-          appreciation, professeur
-        )
-        VALUES ($1, $2, $3, $4, $5, $6)
-      `;
-      await client.query(matiereQuery, [
-        bulletinResult[0].id,
-        matiere.matiere,
-        matiere.moyenne,
-        matiere.moyenneClasse,
-        matiere.appreciation,
-        matiere.professeur
-      ]);
-    }
-
-    await client.query('COMMIT');
-
-    return {
-      ...bulletinResult[0],
-      matieres: bulletin.matieres
-    };
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export const updateBulletin = async (id: number, bulletin: Partial<Bulletin>): Promise<Bulletin> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-
-    // Mettre à jour le bulletin
-    const bulletinQuery = `
-      UPDATE bulletins
-      SET trimestre = COALESCE($1, trimestre),
-          annee = COALESCE($2, annee),
-          moyenne_generale = COALESCE($3, moyenne_generale),
-          moyenne_classe = COALESCE($4, moyenne_classe),
-          appreciation_generale = COALESCE($5, appreciation_generale),
-          status = COALESCE($6, status),
-          date_printed = COALESCE($7, date_printed)
-      WHERE id = $8
-      RETURNING *
-    `;
-    const [bulletinResult] = await client.query(bulletinQuery, [
-      bulletin.semestre,
-      bulletin.annee,
-      bulletin.moyenneGenerale,
-      bulletin.moyenneClasse,
-      bulletin.appreciationGenerale,
-      bulletin.status,
-      bulletin.datePrinted,
-      id
-    ]);
-
-    // Mettre à jour les matières si fournies
-    if (bulletin.matieres) {
-      // Supprimer les anciennes matières
-      await client.query('DELETE FROM bulletin_matieres WHERE bulletin_id = $1', [id]);
-
-      // Ajouter les nouvelles matières
-      for (const matiere of bulletin.matieres) {
-        const matiereQuery = `
-          INSERT INTO bulletin_matieres (
-            bulletin_id, matiere, moyenne, moyenne_classe,
-            appreciation, professeur
-          )
-          VALUES ($1, $2, $3, $4, $5, $6)
-        `;
-        await client.query(matiereQuery, [
-          id,
-          matiere.matiere,
-          matiere.moyenne,
-          matiere.moyenneClasse,
-          matiere.appreciation,
-          matiere.professeur
-        ]);
-      }
-    }
-
-    await client.query('COMMIT');
-
-    return {
-      ...bulletinResult[0],
-      matieres: bulletin.matieres || []
-    };
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export const deleteBulletin = async (id: number): Promise<void> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-
-    // Supprimer les matières du bulletin
-    await client.query('DELETE FROM bulletin_matieres WHERE bulletin_id = ?', [id]);
-
-    // Supprimer le bulletin
-    await client.query('DELETE FROM bulletins WHERE id = ?', [id]);
-
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export const filterBulletins = async (filters: {
-  eleveId?: number;
-  trimestre?: number;
-  annee?: string;
-  status?: string[];
-}): Promise<Bulletin[]> => {
-  let query = `
-    SELECT b.*, e.nom as eleve_nom, e.prenom as eleve_prenom
-    FROM bulletins b
-    JOIN eleves e ON b.eleve_id = e.id
-    WHERE 1=1
-  `;
-  const params: any[] = [];
-  let paramIndex = 1;
-
-  if (filters.eleveId) {
-    query += ` AND b.eleve_id = $${paramIndex}`;
-    params.push(filters.eleveId);
-    paramIndex++;
-  }
-
-  if (filters.trimestre) {
-    query += ` AND b.trimestre = $${paramIndex}`;
-    params.push(filters.trimestre);
-    paramIndex++;
-  }
-
-  if (filters.annee) {
-    query += ` AND b.annee = $${paramIndex}`;
-    params.push(filters.annee);
-    paramIndex++;
-  }
-
-  if (filters.status && filters.status.length > 0) {
-    query += ` AND b.status = ANY($${paramIndex})`;
-    params.push(filters.status);
-    paramIndex++;
-  }
-
-  const [result] = await pool.query(query, params);
-  return (result as any[]).map(row => ({
-    ...row,
-    eleveNom: row.eleve_nom,
-    elevePrenom: row.eleve_prenom
-  }));
-}; 
+export async function filterBulletins(criteria: any) {
+  const res = await fetch(`${API_URL}/filter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(criteria),
+  });
+  return await res.json();
+}

@@ -1,133 +1,75 @@
-import pool from '@/config/database';
-import { Cours } from '@/types/cours';
+// frontend/src/services/coursService.ts
+const BASE_URL = 'http://localhost:8080/api/cours';
 
-export const getCours = async (): Promise<Cours[]> => {
-  const query = `
-    SELECT c.*, p.nom as professeur_nom, p.prenom as professeur_prenom
-    FROM cours c
-    JOIN professeurs p ON c.professeur_id = p.id
-  `;
-  const [result] = await pool.query(query);
-  return (result as any[]).map(row => ({
-    ...row,
-    professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  })) as Cours[];
-};
-
-export const getCoursById = async (id: number): Promise<Cours | null> => {
-  const query = `
-    SELECT c.*, p.nom as professeur_nom, p.prenom as professeur_prenom
-    FROM cours c
-    JOIN professeurs p ON c.professeur_id = p.id
-    WHERE c.id = $1
-  `;
-  const [result] = await pool.query(query, [id]);
-  if (!result[0]) return null;
-  
-  const row = result[0];
-  return {
-    ...row,
-    professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  };
-};
-
-export const createCours = async (cours: Omit<Cours, 'id'>): Promise<Cours> => {
-  const query = `
-    INSERT INTO cours (
-      classe, matiere, professeur_id, salle,
-      jour, debut, duree, couleur
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING *
-  `;
-  const [result] = await pool.query(query, [
-    cours.classe,
-    cours.matiere,
-    cours.professeurId,
-    cours.salle,
-    cours.jour,
-    cours.debut,
-    cours.duree,
-    cours.couleur
-  ]);
-  return result[0];
-};
-
-export const updateCours = async (id: number, cours: Partial<Cours>): Promise<Cours> => {
-  const query = `
-    UPDATE cours
-    SET classe = COALESCE($1, classe),
-        matiere = COALESCE($2, matiere),
-        professeur_id = COALESCE($3, professeur_id),
-        salle = COALESCE($4, salle),
-        jour = COALESCE($5, jour),
-        debut = COALESCE($6, debut),
-        duree = COALESCE($7, duree),
-        couleur = COALESCE($8, couleur)
-    WHERE id = $9
-    RETURNING *
-  `;
-  const [result] = await pool.query(query, [
-    cours.classe,
-    cours.matiere,
-    cours.professeurId,
-    cours.salle,
-    cours.jour,
-    cours.debut,
-    cours.duree,
-    cours.couleur,
-    id
-  ]);
-  return result[0];
-};
-
-export const deleteCours = async (id: number): Promise<void> => {
-  const query = 'DELETE FROM cours WHERE id = $1';
-  await pool.query(query, [id]);
-};
-
-export const filterCours = async (filters: {
-  classe?: string;
-  professeurId?: number;
-  jour?: number;
-  matiere?: string;
-}): Promise<Cours[]> => {
-  let query = `
-    SELECT c.*, p.nom as professeur_nom, p.prenom as professeur_prenom
-    FROM cours c
-    JOIN professeurs p ON c.professeur_id = p.id
-    WHERE 1=1
-  `;
-  const params: any[] = [];
-  let paramIndex = 1;
-
-  if (filters.classe) {
-    query += ` AND c.classe = $${paramIndex}`;
-    params.push(filters.classe);
-    paramIndex++;
+const handleResponse = async (res: Response) => {
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Une erreur est survenue');
   }
+  return res.json();
+};
 
-  if (filters.professeurId) {
-    query += ` AND c.professeur_id = $${paramIndex}`;
-    params.push(filters.professeurId);
-    paramIndex++;
+// Fonction pour récupérer tous les cours
+export const fetchCours = async () => {
+  try {
+    const res = await fetch(BASE_URL);
+    return await handleResponse(res);
+  } catch (error) {
+    console.error('Erreur de récupération des cours:', error);
+    throw error;  // Laisse l'appelant gérer l'erreur
   }
+};
 
-  if (filters.jour !== undefined) {
-    query += ` AND c.jour = $${paramIndex}`;
-    params.push(filters.jour);
-    paramIndex++;
+// Fonction pour récupérer un cours par son ID
+export const fetchCoursById = async (id: number) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${id}`);
+    return await handleResponse(res);
+  } catch (error) {
+    console.error('Erreur de récupération du cours:', error);
+    throw error;
   }
+};
 
-  if (filters.matiere) {
-    query += ` AND c.matiere = $${paramIndex}`;
-    params.push(filters.matiere);
-    paramIndex++;
+// Fonction pour créer un nouveau cours
+export const createCours = async (cours: { nom: string; enseignant: string }) => {
+  try {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cours),
+    });
+    return await handleResponse(res);
+  } catch (error) {
+    console.error('Erreur de création du cours:', error);
+    throw error;
   }
+};
 
-  const [result] = await pool.query(query, params);
-  return (result as any[]).map(row => ({
-    ...row,
-    professeur: `${row.professeur_prenom} ${row.professeur_nom}`
-  })) as Cours[];
-}; 
+// Fonction pour mettre à jour un cours
+export const updateCours = async (id: number, cours: { nom: string; enseignant: string }) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cours),
+    });
+    return await handleResponse(res);
+  } catch (error) {
+    console.error('Erreur de mise à jour du cours:', error);
+    throw error;
+  }
+};
+
+// Fonction pour supprimer un cours
+export const deleteCours = async (id: number) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'DELETE',
+    });
+    return await handleResponse(res);
+  } catch (error) {
+    console.error('Erreur de suppression du cours:', error);
+    throw error;
+  }
+};

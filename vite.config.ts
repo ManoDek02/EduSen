@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/api': 'http://localhost:3001', // proxy les appels vers le backend Express
+    },
   },
   plugins: [react()],
   resolve: {

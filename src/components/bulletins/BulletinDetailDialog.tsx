@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Printer, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Bulletin } from '@/types/bulletin';
 import BulletinTemplate from './BulletinTemplate';
-//import pool from '@/config/database';
 
 interface BulletinDetailDialogProps {
   bulletin: Bulletin;
@@ -13,37 +12,30 @@ interface BulletinDetailDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-//export const getBulletinById = async (id: number): Promise<Bulletin | null> => {
- // const query = 'SELECT * FROM bulletins WHERE id = $1';
- // const [result] = await pool.query(query, [id]);
-  //return result[0] || null; // Retourne le bulletin ou null
-//};
-
-const BulletinDetailDialog = ({ bulletin, open, onOpenChange }: BulletinDetailDialogProps) => {
+const BulletinDetailDialog: React.FC<BulletinDetailDialogProps> = ({ bulletin, open, onOpenChange }) => {
   const [printMode, setPrintMode] = useState(false);
 
   const handlePrint = () => {
-    setPrintMode(true);
-    
-    // Ajouter la date d'impression
-    const bulletinWithDate = {
-      ...bulletin,
-      datePrinted: new Date().toISOString()
-    };
+    if (bulletin) {
+      setPrintMode(true);
+      const bulletinWithDate = {
+        ...bulletin,
+        datePrinted: new Date().toISOString(),
+      };
 
-    // Petit délai pour s'assurer que le DOM est mis à jour avant d'imprimer
-    setTimeout(() => {
-      window.print();
-      setPrintMode(false);
-      toast.success('Bulletin imprimé avec succès');
-    }, 100);
+      setTimeout(() => {
+        window.print();
+        setPrintMode(false);
+        toast.success('Bulletin imprimé avec succès');
+      }, 100);
+    }
   };
 
   const handleDownload = () => {
     toast.success('Bulletin téléchargé en format PDF');
   };
 
-  // Styles spécifiques pour l'impression
+  // Si le mode d'impression est activé, on affiche uniquement le bulletin
   if (printMode) {
     return (
       <div className="print-container">
@@ -72,6 +64,11 @@ const BulletinDetailDialog = ({ bulletin, open, onOpenChange }: BulletinDetailDi
         <BulletinTemplate bulletin={bulletin} printMode={true} />
       </div>
     );
+  }
+
+  // Si le bulletin n'est pas encore chargé, ne rien afficher ou afficher un message de chargement
+  if (!bulletin) {
+    return <div>Chargement...</div>; // Ou un spinner de chargement si vous préférez
   }
 
   return (

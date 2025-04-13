@@ -1,173 +1,50 @@
-import { Pool } from 'mysql2/promise';
-import pool from '../../Backend/src/config/database';
-import { Eleve } from '../types/eleve';
+import { Eleve } from '@/types/eleve';
+
+const API_BASE = 'http://localhost:8080/api/eleves';
 
 export const getEleves = async (): Promise<Eleve[]> => {
-  const query = `
-    SELECT e.*, u.nom, u.prenom, u.email
-    FROM eleves e
-    JOIN users u ON e.user_id = u.id
-  `;
-  const [result] = await pool.query(query);
-  return result as Eleve[];
+  const res = await fetch(API_BASE);
+  if (!res.ok) throw new Error("Erreur lors du chargement des élèves");
+  return res.json();
 };
 
-export const getEleveById = async (id: number): Promise<Eleve | null> => {
-  const query = `
-    SELECT e.*, u.nom, u.prenom, u.email
-    FROM eleves e
-    JOIN users u ON e.user_id = u.id
-    WHERE e.id = ?
-  `;
-  const [result] = await pool.query(query, [id]);
-  return result[0] as Eleve || null;
+export const addEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
+  const res = await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(eleve)
+  });
+  if (!res.ok) throw new Error("Erreur lors de l'ajout de l'élève");
+  return res.json();
 };
 
-export const createEleve = async (eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-
-    const userQuery = `
-      INSERT INTO users (matricule, email, nom, prenom, role, password_hash)
-      VALUES (?, ?, ?, ?, 'eleve', ?)
-      RETURNING id
-    `;
-    const [userResult] = await client.query(userQuery, [
-      eleve.matricule,
-      eleve.email,
-      eleve.nom,
-      eleve.prenom,
-      eleve.password_hash
-    ]);
-
-    const eleveQuery = `
-      INSERT INTO eleves (user_id, classe, date_naissance, responsable, status)
-      VALUES (?, ?, ?, ?, ?)
-      RETURNING *
-    `;
-    const [eleveResult] = await client.query(eleveQuery, [
-      userResult[0].id,
-      eleve.classe,
-      eleve.dateNaissance,
-      eleve.responsable,
-      eleve.status
-    ]);
-
-    await client.query('COMMIT');
-    return {
-      ...eleveResult[0],
-      nom: eleve.nom,
-      prenom: eleve.prenom,
-      email: eleve.email
-    };
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export const addEleve = async (newEleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
-  return createEleve(newEleve);
+export const updateEleve = async (id: number, eleve: Omit<Eleve, 'id'>): Promise<Eleve> => {
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(eleve)
+  });
+  if (!res.ok) throw new Error("Erreur lors de la mise à jour de l'élève");
+  return res.json();
 };
 
 export const deleteEleve = async (id: number): Promise<void> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-    
-    // D'abord supprimer l'élève
-    await client.query('DELETE FROM eleves WHERE id = ?', [id]);
-    
-    // Puis supprimer l'utilisateur associé
-    await client.query('DELETE FROM users WHERE id IN (SELECT user_id FROM eleves WHERE id = ?)', [id]);
-    
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-export const updateEleve = async (id: number, eleve: Partial<Eleve>): Promise<Eleve> => {
-  const client = await pool.getConnection();
-  try {
-    await client.query('BEGIN');
-
-    // Update user table
-    const userQuery = `
-      UPDATE users
-      SET 
-        matricule = COALESCE(?, matricule),
-        email = COALESCE(?, email),
-        nom = COALESCE(?, nom),
-        prenom = COALESCE(?, prenom)
-      WHERE id IN (SELECT user_id FROM eleves WHERE id = ?)
-    `;
-    await client.query(userQuery, [
-      eleve.matricule,
-      eleve.email,
-      eleve.nom,
-      eleve.prenom,
-      id
-    ]);
-
-    // Update eleve table
-    const eleveQuery = `
-      UPDATE eleves
-      SET 
-        classe = COALESCE(?, classe),
-        date_naissance = COALESCE(?, date_naissance),
-        responsable = COALESCE(?, responsable),
-        status = COALESCE(?, status)
-      WHERE id = ?
-      RETURNING *
-    `;
-    const [result] = await client.query(eleveQuery, [
-      eleve.classe,
-      eleve.dateNaissance,
-      eleve.responsable,
-      eleve.status,
-      id
-    ]);
-
-    await client.query('COMMIT');
-    
-    // Get the full updated record
-    const updatedEleve = await getEleveById(id);
-    if (!updatedEleve) throw new Error('Student not found after update');
-    return updatedEleve;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'DELETE'
+  });
+  if (!res.ok) throw new Error("Erreur lors de la suppression de l'élève");
 };
 
 export const filterEleves = async (filters: {
+  searchTerm?: string;
   classe?: string;
+  status?: string[];
 }): Promise<Eleve[]> => {
-
-  let query = `
-    SELECT e.*, u.nom, u.prenom, u.email
-    FROM eleves e
-    JOIN users u ON e.user_id = u.id
-    WHERE 1=1
-  `;
-  const params: any[] = [];
-
-  if (filters.classe) {
-    query += ` AND e.classe = ?`;
-    params.push(filters.classe);
-  }
-
-  const [result] = await pool.query(query, params);
-  return result as Eleve[];
-
-  
+  const res = await fetch(`${API_BASE}/filter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(filters)
+  });
+  if (!res.ok) throw new Error("Erreur lors du filtrage des élèves");
+  return res.json();
 };

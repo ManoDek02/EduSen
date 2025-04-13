@@ -70,7 +70,7 @@ export const useEleves = () => {
       setLoading(false);
     }
   };
-
+                        
   const handleUpdateEleve = async (updatedEleveData: Eleve) => {
     if (selectedEleve) {
       try {
@@ -167,3 +167,5 @@ export const useEleves = () => {
     handleSearch
   };
 };
+
+

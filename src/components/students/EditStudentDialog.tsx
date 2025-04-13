@@ -31,7 +31,7 @@ const formSchema = z.object({
 
 interface EditStudentDialogProps {
   eleve: {
-    id: string;
+    id: number;
     nom: string;
     prenom: string;
     classe: string;

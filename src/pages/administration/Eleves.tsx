@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/layout/PageHeader';
@@ -8,6 +7,8 @@ import DeleteEleveDialog from '@/components/students/DeleteEleveDialog';
 import ElevesList from '@/components/students/ElevesList';
 import ElevesActions from '@/components/students/ElevesActions';
 import { useEleves } from '@/hooks/use-eleves';
+import { Eleve } from '@/types/eleve';
+
 
 const Eleves = () => {
   const {

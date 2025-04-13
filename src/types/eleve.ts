@@ -13,3 +13,4 @@ export interface Eleve {
   created_at?: string;
   updated_at?: string;
 }
+

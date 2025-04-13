@@ -197,8 +197,8 @@ const Notes = () => {
       result = result.filter(note => note.matiere === filters.matiere);
     }
 
-    if (filters.trimestre) {
-      result = result.filter(note => note.semestre === filters.trimestre);
+    if (filters.semestre) {
+      result = result.filter(note => note.semestre === filters.semestre);
     }
 
     if (filters.typesEvaluation && filters.typesEvaluation.length > 0) {

@@ -13,6 +13,7 @@ import { Eleve } from '@/types/eleve';
 import { filterEleves } from '@/services/elevesService';
 import { toast } from 'sonner';
 
+
 interface FilterOptions {
   status?: string[];
   searchTerm?: string;

@@ -1,129 +1,64 @@
-import pool from '@/config/database';
-import { Notification } from '@/types/notification';
+const API_URL = 'http://localhost:3001/api/notifications';
 
-export const getNotifications = async (userId: number): Promise<Notification[]> => {
-  const query = `
-    SELECT *
-    FROM notifications
-    WHERE user_id = $1
-    ORDER BY created_at DESC
-  `;
-  const [result] = await pool.query(query, [userId]);
-  return (result as any[]).map(row => ({
-    ...row,
-    createdAt: row.created_at
-  })) as Notification[];
-};
+export async function getNotifications() {
+  const res = await fetch(API_URL);
+  return await res.json();
+}
 
-export const getNotificationById = async (id: number): Promise<Notification | null> => {
-  const query = 'SELECT * FROM notifications WHERE id = $1';
-  const [result] = await pool.query(query, [id]);
-  return result[0] || null;
-};
+export async function getNotificationById(id: number) {
+  const res = await fetch(`${API_URL}/${id}`);
+  return await res.json();
+}
 
-export const createNotification = async (notification: Omit<Notification, 'id'>): Promise<Notification> => {
-  const query = `
-    INSERT INTO notifications (
-      user_id, title, message, type, is_read
-    )
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING *
-  `;
-  const [result] = await pool.query(query, [
-    notification.userId,
-    notification.title,
-    notification.message,
-    notification.type,
-    notification.isRead
-  ]);
-  return result[0];
-};
+export async function createNotification(notification: any) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(notification),
+  });
+  return await res.json();
+}
 
-export const updateNotification = async (id: number, notification: Partial<Notification>): Promise<Notification> => {
-  const query = `
-    UPDATE notifications
-    SET title = COALESCE($1, title),
-        message = COALESCE($2, message),
-        type = COALESCE($3, type),
-        is_read = COALESCE($4, is_read)
-    WHERE id = $5
-    RETURNING *
-  `;
-  const [result] = await pool.query(query, [
-    notification.title,
-    notification.message,
-    notification.type,
-    notification.isRead,
-    id
-  ]);
-  return result[0];
-};
+export async function updateNotification(id: number, notification: any) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(notification),
+  });
+  return await res.json();
+}
 
-export const deleteNotification = async (id: number): Promise<void> => {
-  const query = 'DELETE FROM notifications WHERE id = $1';
-  await pool.query(query, [id]);
-};
+export async function deleteNotification(id: number) {
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  });
+  return await res.json();
+}
 
-export const markAsRead = async (id: number): Promise<void> => {
-  const query = 'UPDATE notifications SET is_read = true WHERE id = $1';
-  await pool.query(query, [id]);
-};
+export async function markAsRead(id: number) {
+  const res = await fetch(`${API_URL}/${id}/read`, {
+    method: 'PATCH',
+  });
+  return await res.json();
+}
 
-export const markAllAsRead = async (userId: number): Promise<void> => {
-  const query = 'UPDATE notifications SET is_read = true WHERE user_id = $1';
-  await pool.query(query, [userId]);
-};
+export async function markAllAsRead() {
+  const res = await fetch(`${API_URL}/readAll`, {
+    method: 'PATCH',
+  });
+  return await res.json();
+}
 
-export const getUnreadCount = async (userId: number): Promise<number> => {
-  const query = 'SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = false';
-  const [result] = await pool.query(query, [userId]);
-  return parseInt(result[0].count);
-};
+export async function getUnreadCount() {
+  const res = await fetch(`${API_URL}/unreadCount`);
+  return await res.json();
+}
 
-export const filterNotifications = async (filters: {
-  userId: number;
-  type?: string[];
-  isRead?: boolean;
-  startDate?: string;
-  endDate?: string;
-}): Promise<Notification[]> => {
-  let query = `
-    SELECT *
-    FROM notifications
-    WHERE user_id = $1
-  `;
-  const params: any[] = [filters.userId];
-  let paramIndex = 2;
-
-  if (filters.type && filters.type.length > 0) {
-    query += ` AND type = ANY($${paramIndex})`;
-    params.push(filters.type);
-    paramIndex++;
-  }
-
-  if (filters.isRead !== undefined) {
-    query += ` AND is_read = $${paramIndex}`;
-    params.push(filters.isRead);
-    paramIndex++;
-  }
-
-  if (filters.startDate) {
-    query += ` AND created_at >= $${paramIndex}`;
-    params.push(filters.startDate);
-    paramIndex++;
-  }
-
-  if (filters.endDate) {
-    query += ` AND created_at <= $${paramIndex}`;
-    params.push(filters.endDate);
-    paramIndex++;
-  }
-
-  query += ' ORDER BY created_at DESC';
-
-  const [result] = await pool.query(query, params);
-  return (result as any[]).map(row => ({
-    ...row,
-    createdAt: row.created_at
-  })) as Notification[];
-}; 
+export async function filterNotifications(criteria: any) {
+  const res = await fetch(`${API_URL}/filter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(criteria),
+  });
+  return await res.json();
+}

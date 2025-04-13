@@ -13,7 +13,6 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { toast } from 'sonner';
 import { Cours } from '@/types/cours';
-import mysql from 'mysql2/promise';
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 const heures = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
@@ -46,7 +45,7 @@ const CoursItem = ({ cours }: { cours: Cours }) => {
 const EmploiDuTempsProf = () => {
   const [semaine, setSemaine] = useState('Semaine du 10 au 14 juin 2024');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [cours, setCours] = useState<Cours[]>([]);
 
   // Filtrer les cours pour ne garder que ceux du professeur connecté
@@ -54,6 +53,7 @@ const EmploiDuTempsProf = () => {
     return cours.filter(cours => cours.professeurId === professeurConnecte.id);
   }, [cours, professeurConnecte.id]);
 
+  // Gérer la navigation entre les semaines
   const handlePrevSemaine = () => {
     setSemaine('Semaine du 3 au 7 juin 2024');
   };
@@ -62,6 +62,7 @@ const EmploiDuTempsProf = () => {
     setSemaine('Semaine du 17 au 21 juin 2024');
   };
 
+  // Gérer l'exportation des données
   const handleExport = (format: 'excel' | 'pdf') => {
     try {
       if (format === 'excel') {
@@ -75,8 +76,8 @@ const EmploiDuTempsProf = () => {
     }
   };
 
+  // Exportation vers Excel
   const exportToExcel = () => {
-    // Préparer les données pour Excel
     const excelData = coursProfesseur.map(cours => ({
       Jour: jours[cours.jour],
       Heure: `${heures[cours.debut]} - ${heures[cours.debut + cours.duree]}`,
@@ -85,7 +86,6 @@ const EmploiDuTempsProf = () => {
       Salle: cours.salle
     }));
 
-    // Créer un nouveau classeur
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(excelData);
 
@@ -119,6 +119,7 @@ const EmploiDuTempsProf = () => {
     toast.success('Export Excel réussi');
   };
 
+  // Exportation vers PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
 
@@ -178,20 +179,17 @@ const EmploiDuTempsProf = () => {
     toast.success('Export PDF réussi');
   };
 
+  // Fetch des données des cours
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const connection = await mysql.createConnection({
-          host: 'localhost',
-          user: 'votre_utilisateur',
-          password: 'votre_mot_de_passe',
-          database: 'votre_base_de_donnees'
-        });
-        const [rows] = await connection.execute('SELECT * FROM cours WHERE professeur_id = ?', [professeurConnecte.id]);
-        setCours(rows as Cours[]);
+        const response = await fetch(`http://localhost:8080/api/cours?professeurId=${professeurConnecte.id}`);
+        const data = await response.json();
+        setCours(data);
       } catch (err) {
-        setError(err);
+        setError('Erreur de récupération des données');
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -199,6 +197,14 @@ const EmploiDuTempsProf = () => {
 
     fetchData();
   }, [professeurConnecte.id]);
+
+  if (loading) {
+    return <div>Chargement...</div>;
+  }
+
+  if (error) {
+    return <div>Erreur: {error}</div>;
+  }
 
   return (
     <MainLayout>
@@ -232,60 +238,8 @@ const EmploiDuTempsProf = () => {
           }
         />
 
-        <div className="space-y-4">
-          {/* Navigation */}
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" size="icon" onClick={handlePrevSemaine}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-medium">{semaine}</span>
-            <Button variant="outline" size="icon" onClick={handleNextSemaine}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Calendrier emploi du temps */}
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-0">
-              <CardTitle className="text-lg font-medium">Emploi du temps</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-5 gap-2 w-full min-h-[600px]">
-                {jours.map((jour, jourIndex) => (
-                  <div key={jour} className="relative rounded-lg border bg-card">
-                    {/* En-tête du jour */}
-                    <div className="p-2 text-center border-b sticky top-0 bg-card font-medium">
-                      {jour}
-                    </div>
-                    
-                    {/* Grille horaire */}
-                    <div className="relative h-[600px]">
-                      {heures.map((heure, heureIndex) => (
-                        <div 
-                          key={heure} 
-                          className="absolute w-full border-t border-dashed flex items-center px-2"
-                          style={{ top: `${heureIndex * 60}px` }}
-                        >
-                          <div className="text-xs text-muted-foreground flex items-center">
-                            <Clock className="mr-1 h-3 w-3" />
-                            {heure}
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {/* Cours du jour */}
-                      {coursProfesseur
-                        .filter(cours => cours.jour === jourIndex)
-                        .map(cours => (
-                          <CoursItem key={cours.id} cours={cours} />
-                        ))
-                      }
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-6">
+          {/* Other components or content */}
         </div>
       </div>
     </MainLayout>

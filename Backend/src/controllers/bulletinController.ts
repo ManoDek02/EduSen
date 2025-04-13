@@ -24,7 +24,7 @@ export const getBulletinById = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   const client = await pool.getConnection();
   try {
-    const [bulletinRows] = await client.query(`
+    const [bulletinRows]: [Array<any>, any] = await client.query(`
       SELECT b.*, e.nom as eleve_nom, e.prenom as eleve_prenom
       FROM bulletins b
       JOIN eleves e ON b.eleve_id = e.id
@@ -32,7 +32,7 @@ export const getBulletinById = async (req: Request, res: Response) => {
     `, [id]);
     if (!bulletinRows[0]) return res.status(404).json({ error: 'Bulletin non trouvé' });
 
-    const [matieresRows] = await client.query(`SELECT * FROM bulletin_matieres WHERE bulletin_id = ?`, [id]);
+    const [matieresRows]: [Array<any>, any] = await client.query(`SELECT * FROM bulletin_matieres WHERE bulletin_id = ?`, [id]);
 
     res.json({
       ...bulletinRows[0],

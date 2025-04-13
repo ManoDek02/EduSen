@@ -17,7 +17,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import type { jsPDF as JSPDFType } from 'jspdf';
-import { fetchGrades } from '@/services/api'; // 👈 AJOUT IMPORT     
+import { fetchGrades } from '../../services/api'; // Ensure this path is correct
 
 interface NoteFilters {
   trimestre?: number;

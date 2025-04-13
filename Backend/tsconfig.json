@@ -9,5 +9,5 @@
       "moduleResolution": "node",
       "resolveJsonModule": true
     },
-    "include": ["src"]
+    "include": ["src", "controllers/bulletinController.ts", "controllers/notesController.ts", "controllers/eleveController.ts", "controllers/professeurController.ts", "controllers/notificationsController.ts", "controllers/coursController.ts", "src/route/bulletin.ts", "src/route/notes.ts", "src/route/eleve.ts","src/route/cours.ts", "src/route/notificationsRoute.ts", "src/route/professeur.ts", "src/server.ts"]
   }

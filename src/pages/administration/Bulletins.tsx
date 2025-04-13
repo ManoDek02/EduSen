@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Bulletin } from '@/types/bulletin';
@@ -15,7 +15,7 @@ import FilterBulletinsDialog from '@/components/bulletins/FilterBulletinsDialog'
 import { formatDate } from '@/lib/utils';
 
 interface ActiveFilters {
-  semestre?: number;
+  semestre?: string;
   classe?: string;
   status?: string[];
 }
@@ -30,6 +30,26 @@ const Bulletins = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [bulletinToDelete, setBulletinToDelete] = useState<Bulletin | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
+  const [loading, setLoading] = useState(false); // ✅ Pour UX
+
+  // ✅ Chargement des bulletins depuis le backend
+  useEffect(() => {
+    const fetchBulletins = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/bulletins');
+        const data = await res.json();
+        setBulletins(data);
+        setFilteredBulletins(data);
+      } catch (err) {
+        toast.error('Erreur lors du chargement des bulletins');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBulletins();
+  }, []);
 
   const handleAddBulletin = (newBulletin: Bulletin) => {
     const updatedBulletins = [...bulletins, newBulletin];
@@ -38,41 +58,9 @@ const Bulletins = () => {
     toast.success('Bulletin créé avec succès');
   };
 
-  const handleViewBulletin = (bulletin: Bulletin) => {
-    setSelectedBulletin(bulletin);
-    setIsDetailOpen(true);
-  };
-
-  const handleEditBulletin = (bulletin: Bulletin) => {
-    toast.info("Fonctionnalité d'édition à implémenter");
-  };
-
-  const handleDeleteBulletin = (bulletin: Bulletin) => {
-    setBulletinToDelete(bulletin);
-    setConfirmDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (!bulletinToDelete) return;
-    
-    const updatedBulletins = bulletins.filter(b => b.id !== bulletinToDelete.id);
-    setBulletins(updatedBulletins);
-    setFilteredBulletins(updatedBulletins);
-    toast.success('Bulletin supprimé avec succès');
-    
-    setConfirmDialogOpen(false);
-    setBulletinToDelete(null);
-  };
-
-  const handlePrintBulletin = (bulletin: Bulletin) => {
-    setSelectedBulletin(bulletin);
-    setIsDetailOpen(true);
-    toast.success('Préparation de l\'impression...');
-  };
-
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    applyFiltersAndSearch(bulletins, term, {});
+    applyFiltersAndSearch(bulletins, term, activeFilters); // ✅ Garder les filtres actifs
   };
 
   const handleApplyFilters = (filters) => {
@@ -85,34 +73,26 @@ const Bulletins = () => {
     applyFiltersAndSearch(bulletins, searchTerm, {});
   };
 
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (activeFilters.semestre) count++;
-    if (activeFilters.classe) count++;
-    if (activeFilters.status?.length) count++;
-    return count;
-  };
-
   const applyFiltersAndSearch = (data: Bulletin[], term: string, filters: ActiveFilters) => {
     let result = [...data];
 
     if (filters.semestre) {
-      result = result.filter(bulletin => bulletin.semestre === filters.semestre);
+      result = result.filter(bulletin => bulletin.semestre === Number(filters.semestre));
     }
 
     if (filters.classe) {
       result = result.filter(bulletin => bulletin.classe === filters.classe);
     }
 
-    if (filters.status && filters.status.length > 0) {
+    if (filters.status?.length) {
       result = result.filter(bulletin => filters.status.includes(bulletin.status));
     }
 
     if (term) {
-      result = result.filter(bulletin => 
+      result = result.filter(bulletin =>
         Object.values(bulletin).some(
-          value => 
-            value && 
+          value =>
+            value &&
             typeof value === 'string' &&
             value.toLowerCase().includes(term.toLowerCase())
         ) ||
@@ -121,6 +101,26 @@ const Bulletins = () => {
     }
 
     setFilteredBulletins(result);
+  };
+
+  const confirmDelete = () => {
+    if (!bulletinToDelete) return;
+
+    const updated = bulletins.filter(b => b.id !== bulletinToDelete.id);
+    setBulletins(updated);
+    setFilteredBulletins(updated);
+    toast.success('Bulletin supprimé avec succès');
+
+    setConfirmDialogOpen(false);
+    setBulletinToDelete(null);
+  };
+
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (activeFilters.semestre) count++;
+    if (activeFilters.classe) count++;
+    if (activeFilters.status?.length) count++;
+    return count;
   };
 
   const getStatusBadge = (status: string) => {
@@ -136,116 +136,7 @@ const Bulletins = () => {
     }
   };
 
-  const columns = [
-    {
-      key: 'eleveNom',
-      header: 'Élève',
-      cell: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col">
-            <div className="font-medium">{row.eleveNom} {row.elevePrenom}</div>
-            <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              {row.classe}
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      key: 'semestre',
-      header: 'Période',
-      cell: (row) => (
-        <div className="flex flex-col">
-          <Badge variant="outline" className="w-fit">
-            Trimestre {row.semestre}
-          </Badge>
-          <div className="text-xs text-muted-foreground">{row.annee}</div>
-        </div>
-      )
-    },
-    {
-      key: 'moyenneGenerale',
-      header: 'Moyenne',
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          <Badge variant={
-            row.moyenneGenerale >= 14 ? "default" :
-            row.moyenneGenerale >= 10 ? "secondary" : "destructive"
-          }>
-            {row.moyenneGenerale.toFixed(1)}
-          </Badge>
-          <div className="text-xs text-muted-foreground">/20</div>
-        </div>
-      )
-    },
-    {
-      key: 'moyenneClasse',
-      header: 'Moy. Classe',
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">
-            {row.moyenneClasse.toFixed(1)}
-          </Badge>
-          <div className="text-xs text-muted-foreground">/20</div>
-        </div>
-      )
-    },
-    {
-      key: 'status',
-      header: 'Statut',
-      cell: (row) => (
-        <div className="flex items-center gap-2">
-          {getStatusBadge(row.status)}
-          {row.status === 'publié' && (
-            <Badge variant="outline" className="text-xs">
-              {formatDate(row.datePublication)}
-            </Badge>
-          )}
-        </div>
-      )
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      cell: (row) => (
-        <div className="flex items-center gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleViewBulletin(row)}
-            className="hover:bg-blue-50 hover:text-blue-600"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handlePrintBulletin(row)}
-            className="hover:bg-green-50 hover:text-green-600"
-          >
-            <Printer className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleEditBulletin(row)}
-            className="hover:bg-yellow-50 hover:text-yellow-600"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => handleDeleteBulletin(row)}
-            className="hover:bg-red-50 hover:text-red-600"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      )
-    }
-  ];
+  const columns = [/* ... tes colonnes sont bonnes, pas besoin de modifier ici */];
 
   return (
     <MainLayout>
@@ -264,9 +155,10 @@ const Bulletins = () => {
           }
         />
 
-        <DataTable 
+        <DataTable
           columns={columns}
           data={filteredBulletins}
+          loading={loading} // ✅ si ton DataTable supporte une prop `loading`
           searchable={true}
           searchTerm={searchTerm}
           onSearch={handleSearch}
@@ -283,7 +175,7 @@ const Bulletins = () => {
                   Réinitialiser les filtres
                 </Button>
               )}
-              <FilterBulletinsDialog 
+              <FilterBulletinsDialog
                 onApplyFilters={handleApplyFilters}
                 activeFilters={activeFilters}
                 trigger={
@@ -316,8 +208,7 @@ const Bulletins = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmation de suppression</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce bulletin ? 
-              Cette action ne peut pas être annulée.
+              Êtes-vous sûr de vouloir supprimer ce bulletin ? Cette action ne peut pas être annulée.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

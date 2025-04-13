@@ -1,3 +1,4 @@
+// 🔁 SUPPRESSION de l'import de `pool`
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,12 +7,9 @@ import { FilePlus } from 'lucide-react';
 import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
-import { Bulletin, BulletinMatiere } from '@/types/bulletin';
+import { Bulletin } from '@/types/bulletin';
 import { Eleve } from '@/types/eleve';
-import { Note } from '@/types/note';
-import pool from '@/config/database';
 import { getEleves } from '@/services/elevesService';
-import { getNotes } from '@/services/notesService';
 
 interface NewBulletinDialogProps {
   onAddBulletin: (bulletin: Bulletin) => void;
@@ -20,7 +18,6 @@ interface NewBulletinDialogProps {
 const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
   const [open, setOpen] = React.useState(false);
   const [eleves, setEleves] = useState<Eleve[]>([]);
-  const [notes, setNotes] = useState<Note[]>([]);
   const form = useForm({
     defaultValues: {
       eleveId: '',
@@ -31,94 +28,38 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
 
   useEffect(() => {
     const fetchEleves = async () => {
-      const fetchedEleves = await getEleves();
-      setEleves(fetchedEleves);
+      try {
+        const fetchedEleves = await getEleves();
+        setEleves(fetchedEleves);
+      } catch (err) {
+        toast.error("Erreur lors du chargement des élèves");
+      }
     };
 
     fetchEleves();
   }, []);
 
-  useEffect(() => {
-    const fetchNotes = async () => {
-      const fetchedNotes = await getNotes();
-      setNotes(fetchedNotes);
-    };
+  const handleSubmit = async (data: any) => {
+    try {
+      const res = await fetch('/api/bulletins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
-    fetchNotes();
-  }, []);
-  const handleSubmit = async (data) => {
-    // Trouver l'élève sélectionné
-    const [result] = await pool.query('SELECT * FROM eleves WHERE id = ?', [data.eleveId]);
-    const eleve = result[0];
-    
-    if (!eleve) {
-      toast.error("Élève non trouvé");
-      return;
-    }
-
-    // Récupérer les notes de l'élève pour le trimestre sélectionné
-    const [notesResult] = await pool.query('SELECT * FROM notes WHERE eleve_id = ? AND semestre = ?', [eleve.id, data.semestre]);
-    const notesEleve = notesResult as Note[];
-
-    if (!notesEleve || notesEleve.length === 0) {
-      toast.error("Pas de notes disponibles pour cet élève ce semestre");
-      return;
-    }
-
-    // Calculer les moyennes par matière
-    const matieresMap = new Map();
-    notesEleve.forEach(note => {
-      if (!matieresMap.has(note.matiere)) {
-        matieresMap.set(note.matiere, {
-          matiere: note.matiere,
-          notes: [],
-          coefficients: [],
-          professeur: note.professeur
-        });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || 'Erreur lors de la création du bulletin');
       }
-      matieresMap.get(note.matiere).notes.push(note.note_1);
-      matieresMap.get(note.matiere).notes.push(note.note_2);
-      matieresMap.get(note.matiere).coefficients.push(note.coefficient);
-    });
 
-    // Créer le tableau de matières avec moyennes
-    const matieres = Array.from(matieresMap.values()).map(m => {
-      const sommeCoef = m.coefficients.reduce((acc, coef) => acc + coef, 0);
-      const sommeNotes = m.notes.reduce((acc, note, idx) => acc + note * m.coefficients[idx], 0);
-      const moyenne = sommeCoef > 0 ? sommeNotes / sommeCoef : 0;
-      
-      return {
-        matiere: m.matiere,
-        moyenne: moyenne,
-        moyenneClasse: 12 + Math.random() * 2, // Valeur fictive
-        appreciation: "À compléter",
-        professeur: m.professeur
-      };
-    });
-
-    // Calculer la moyenne générale
-    const sommeTotale = matieres.reduce((acc, m) => acc + m.moyenne, 0);
-    const moyenneGenerale = matieres.length > 0 ? sommeTotale / matieres.length : 0;
-
-    // Créer le nouveau bulletin
-    const newBulletin: Bulletin = {
-      id: Math.floor(Math.random() * 1000000),
-      eleveId: eleve.id,
-      eleveNom: eleve.nom,
-      elevePrenom: eleve.prenom,
-      classe: eleve.classe,
-      semestre: parseInt(data.semestre),
-      annee: data.annee,
-      matieres: matieres as BulletinMatiere[],
-      moyenneGenerale: moyenneGenerale,
-      moyenneClasse: 12.5, // Valeur fictive
-      appreciationGenerale: "À compléter par le professeur principal",
-      status: 'brouillon'
-    };
-
-    onAddBulletin(newBulletin);
-    setOpen(false);
-    form.reset();
+      const newBulletin = await res.json();
+      onAddBulletin(newBulletin);
+      toast.success("Bulletin généré avec succès");
+      setOpen(false);
+      form.reset();
+    } catch (error: any) {
+      toast.error(error.message || "Erreur inconnue");
+    }
   };
 
   return (
@@ -141,10 +82,7 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Élève</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner un élève" />
@@ -168,10 +106,7 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Semestre</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner un semestre" />
@@ -192,10 +127,7 @@ const NewBulletinDialog = ({ onAddBulletin }: NewBulletinDialogProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Année scolaire</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Sélectionner une année" />

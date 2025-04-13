@@ -47,7 +47,7 @@ const NoteDetailsFields: React.FC<NoteDetailsFieldsProps> = ({ form }) => {
             <FormLabel>Trimestre</FormLabel>
             <Select 
               onValueChange={(value) => field.onChange(parseInt(value))} 
-              defaultValue={field.value.toString()}
+              defaultValue={field.value != null ? field.value.toString() : ''}
             >
               <FormControl>
                 <SelectTrigger>
