@@ -48,9 +48,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.7",
     "embla-carousel-react": "^8.3.0",
+    "express": "^5.1.0",
     "file-saver": "^2.0.5",
     "input-otp": "^1.2.4",
     "jsdf": "^0.3.2",
@@ -78,6 +80,8 @@
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^22.14.0",
     "@types/react": "^18.3.3",
@@ -96,6 +100,6 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^6.2.6"
+    "vite": "^5.4.18"
   }
 }
